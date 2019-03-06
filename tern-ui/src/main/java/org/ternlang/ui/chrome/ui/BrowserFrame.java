@@ -5,6 +5,9 @@
 package org.ternlang.ui.chrome.ui;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Set;
@@ -14,6 +17,7 @@ import org.cef.CefApp;
 import org.cef.browser.CefBrowser;
 import org.cef.handler.CefLifeSpanHandlerAdapter;
 import org.ternlang.ui.ClientCloseListener;
+import org.ternlang.ui.chrome.ChromeFrame;
 
 public class BrowserFrame extends JFrame {
     private final Set<ClientCloseListener> closeListeners = new CopyOnWriteArraySet<>();
@@ -80,6 +84,14 @@ public class BrowserFrame extends JFrame {
                     dispose();
                 }
             }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                System.out.println("BrowserFrame.windowGainedFocus");
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearFocusOwner();
+                BrowserFrame.this.requestFocus();
+            }
+
             @Override
             public void windowClosed(WindowEvent event) {
                 for(ClientCloseListener closeListener : closeListeners) {

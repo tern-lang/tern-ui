@@ -11,7 +11,7 @@ import java.net.URI;
 @Builder
 public class ClientContext {
 
-	public static final String ICON_PATH = "/icon/icon_large.png";
+	public static final String ICON_PATH = "/icon/icon-large.png";
 	public static final String HOME_FOLDER = ".cef";
 
 	private final File cachePath;

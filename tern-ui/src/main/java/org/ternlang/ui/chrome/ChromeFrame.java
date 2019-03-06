@@ -4,9 +4,11 @@
 
 package org.ternlang.ui.chrome;
 
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.URI;
 
@@ -200,7 +202,7 @@ public class ChromeFrame extends BrowserFrame {
         JPanel contentPanel = new JPanel(new BorderLayout());
         //contentPanel.add(control_pane_, BorderLayout.NORTH);
 
-        // 4) By calling getUIComponen() on the CefBrowser instance, we receive
+        // 4) By calling getUIComponent() on the CefBrowser instance, we receive
         //    an displayable UI component which we can add to our application.
         contentPanel.add(getBrowser().getUIComponent(), BorderLayout.CENTER);
         return contentPanel;
