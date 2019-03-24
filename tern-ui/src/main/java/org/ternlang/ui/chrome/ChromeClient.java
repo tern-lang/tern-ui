@@ -1,12 +1,13 @@
 package org.ternlang.ui.chrome;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
-import lombok.SneakyThrows;
+import javax.swing.SwingUtilities;
+
 import org.ternlang.ui.Client;
 import org.ternlang.ui.ClientCloseListener;
 import org.ternlang.ui.ClientContext;
@@ -15,6 +16,10 @@ import org.ternlang.ui.WindowIcon;
 import org.ternlang.ui.WindowIconLoader;
 import org.ternlang.ui.chrome.load.LibraryLoader;
 
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ChromeClient implements Client {
 
 	@Override
@@ -30,7 +35,11 @@ public class ChromeClient implements Client {
 		File cachePath = context.getCachePath();
 		URI target = URI.create(address);
 
-		LibraryLoader.loadFrom(folder);
+		try {
+		   LibraryLoader.loadFrom(folder);
+		} catch(Throwable e) {
+		   log.info("Error loading library from {}", folder, e);
+		}
 		WindowIcon icon = WindowIconLoader.loadIcon(path);
 		String[] arguments = context.getArguments();
 		final ChromeFrameListener listener = new ChromeLogListener();

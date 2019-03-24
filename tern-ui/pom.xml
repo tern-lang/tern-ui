@@ -27,7 +27,7 @@
       <groupId>org.cef</groupId>
       <artifactId>jcef-win64</artifactId>
       <version>1.0</version>
-      <scope>provided</scope>
+      <!--scope>provided</scope-->
     </dependency>
   </dependencies>
   <build>
