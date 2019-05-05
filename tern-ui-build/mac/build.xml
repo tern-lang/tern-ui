@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="Windows" default="package" basedir=".">
+
+   <target name="usage">
+      <echo message="build - Build a single JAR with natives and dependent JAR files"/>
+   </target>
+
+   <target name="-layout">
+      <property name="root.path" value="."/>
+      <property name="java.path" value="${root.path}/java"/>             
+      <property name="download.path" value="${root.path}/download"/>           
+      <property name="native.path" value="${root.path}/native"/>                
+      <property name="template.path" value="${root.path}/template"/> 
+      <property name="maven.path" value="${root.path}/maven"/>
+      <property name="build.path" value="${root.path}/build"/>
+      <property file="build.properties"/>
+   </target>
+
+   <target name="-clean" depends="-layout">
+      <delete dir="${build.path}"/>
+      <delete dir="${maven.path}"/>
+      <mkdir dir="${build.path}"/>
+      <mkdir dir="${maven.path}"/>
+      <available file="${download.path}/${library}-${platform}.zip" property="download.available"/>      
+   </target>
+
+   <target name="-download" depends="-clean" unless="download.available">
+      <delete dir="${native.path}"/>     
+      <mkdir dir="${native.path}"/> 
+      <mkdir dir="${download.path}"/>           
+      <get src="${url}/${library}-${platform}.zip" dest="${download.path}/${library}-${platform}.zip"/>
+      <unzip src="${download.path}/${library}-${platform}.zip" dest="${native.path}"/>
+   </target> 
+
+   <target name="-extract" depends="-download">
+      <unzip dest="${build.path}">
+         <fileset dir="${java.path}">
+            <include name="**/*.jar" />
+         </fileset>    
+      </unzip>
+   </target>
+
+   <target name="build" depends="-extract">
+      <copy todir="${build.path}/${platform}">
+         <fileset dir="${native.path}">
+            <include name="**/*"/>
+         </fileset>
+      </copy>             
+   </target>       
+
+   <target name="package" depends="build">
+      <copy todir="${build.path}/${platform}" overwrite="true">
+         <fileset dir="${native.path}">
+            <include name="**/*"/>
+         </fileset>
+      </copy>     
+      <jar destfile="${maven.path}/${library}-${platform}-${version}.jar" basedir="${build.path}" includes="**/*"/>
+      <copy todir="${maven.path}" overwrite="true">
+         <fileset dir="${template.path}">
+            <include name="maven.pom"/>
+         </fileset>
+         <filterset>
+            <filtersfile file="${root.path}/build.properties"/>
+         </filterset>
+      </copy>      
+      <move file="${maven.path}/maven.pom" tofile="${maven.path}/${library}-${platform}-${version}.pom"/>
+      <copy todir="${user.home}/.m2/repository/org/cef/${library}-${platform}/${version}" overwrite="true">
+         <fileset dir="${maven.path}">
+            <include name="${library}-${platform}-${version}.pom"/>
+            <include name="${library}-${platform}-${version}.jar"/>
+         </fileset>
+      </copy>     
+      <delete dir="${build.path}"/>
+      <delete dir="${maven.path}"/>    
+   </target>    
+
+</project>
