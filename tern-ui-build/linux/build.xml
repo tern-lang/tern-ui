@@ -70,7 +70,8 @@
             <include name="${library}-${platform}-${version}.jar"/>
          </fileset>
       </copy>     
-      <delete dir="${build.path}"/>    
+      <delete dir="${build.path}"/>
+      <delete dir="${maven.path}"/>    
    </target>    
 
 </project>
