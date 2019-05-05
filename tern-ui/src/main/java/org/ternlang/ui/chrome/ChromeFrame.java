@@ -4,16 +4,6 @@
 
 package org.ternlang.ui.chrome;
 
-import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.net.URI;
-
-import javax.swing.JPanel;
-
 import org.cef.CefApp;
 import org.cef.CefApp.CefVersion;
 import org.cef.CefClient;
@@ -28,23 +18,53 @@ import org.cef.handler.CefRequestContextHandlerAdapter;
 import org.cef.network.CefCookieManager;
 import org.ternlang.ui.chrome.dialog.DevToolsDialog;
 import org.ternlang.ui.chrome.dialog.DownloadDialog;
-import org.ternlang.ui.chrome.handler.AppHandler;
-import org.ternlang.ui.chrome.handler.ContextMenuHandler;
-import org.ternlang.ui.chrome.handler.DragHandler;
-import org.ternlang.ui.chrome.handler.JSDialogHandler;
-import org.ternlang.ui.chrome.handler.KeyboardHandler;
-import org.ternlang.ui.chrome.handler.MessageRouterHandler;
-import org.ternlang.ui.chrome.handler.MessageRouterHandlerEx;
-import org.ternlang.ui.chrome.handler.RequestHandler;
+import org.ternlang.ui.chrome.handler.*;
+import org.ternlang.ui.chrome.load.LibraryLoader;
 import org.ternlang.ui.chrome.ui.BrowserFrame;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.net.URI;
 
 public class ChromeFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
+
+    // Linux has some weird static initialisation
+    public static ChromeFrame createChromeFrame(
+            URI target,
+            File logFile,
+            File cacheFile,
+            String libraryFolder,
+            String cookiePath,
+            boolean osrEnabledArg,
+            boolean transparentPaintingEnabledArg,
+            boolean createImmediately,
+            String[] args)
+    {
+        LibraryLoader.loadFrom(libraryFolder);
+
+        // Perform startup initialization on platforms that require it.
+        if (!CefApp.startup()) {
+            System.out.println("Startup initialization failed!");
+            throw new IllegalStateException("Could not start chrome");
+        }
+        final ChromeFrameListener listener = new ChromeLogListener();
+        // MainFrame keeps all the knowledge to display the embedded browser
+        // frame.
+        return new ChromeFrame(listener, target, logFile, cacheFile, osrEnabledArg, transparentPaintingEnabledArg,
+                        createImmediately, cookiePath, args);
+
+    }
+
+
     private final CefClient client_;
     private String errorMsg_ = "";
     private final CefCookieManager cookieManager_;
 
-    public ChromeFrame(ChromeFrameListener listener, URI address, File log, File cache, boolean osrEnabled, boolean transparentPaintingEnabled, String cookiePath, String[] args) {
+    private ChromeFrame(ChromeFrameListener listener, URI address, File log, File cache,
+                       boolean osrEnabled, boolean transparentPaintingEnabled, boolean createImmediately,
+                       String cookiePath, String[] args) {
         CefApp myApp;
         if (CefApp.getState() != CefApp.CefAppState.INITIALIZED) {
             // 1) CefApp is the entry point for JCEF. You can pass
@@ -55,21 +75,7 @@ public class ChromeFrame extends BrowserFrame {
             settings.windowless_rendering_enabled = osrEnabled;
             // try to load URL "about:blank" to see the background color
             settings.background_color = settings.new ColorType(100, 255, 242, 211);
-
-            if(log != null) {
-                try {
-                    settings.log_file = log.getCanonicalPath();
-                } catch(Exception e) {
-                    throw new IllegalArgumentException("Log file " + log + " is invalid", e);
-                }
-            }
-            if(cache != null) {
-                try {
-                    settings.cache_path = cache.getCanonicalPath();
-                } catch(Exception e) {
-                    throw new IllegalArgumentException("Cache path " + cache + " is invalid", e);
-                }
-            }
+            configureCacheAndLog(log, cache, settings);
             myApp = CefApp.getInstance(args, settings);
 
             CefVersion version = myApp.getVersion();
@@ -189,22 +195,40 @@ public class ChromeFrame extends BrowserFrame {
                 address.toString(), osrEnabled, transparentPaintingEnabled, requestContext);
         setBrowser(browser);
 
+        if (createImmediately) browser.createImmediately();
         //    Last but not least we're setting up the UI for this example implementation.
         getContentPane().add(createContentPanel(), BorderLayout.CENTER);
     }
-    
+
+    private JPanel createContentPanel() {
+        JPanel contentPanel = new JPanel(new BorderLayout());
+
+        // 4) By calling getUIComponen() on the CefBrowser instance, we receive
+        //    an displayable UI component which we can add to our application.
+        contentPanel.add(getBrowser().getUIComponent(), BorderLayout.CENTER);
+        return contentPanel;
+    }
+
+    private void configureCacheAndLog(File log, File cache, CefSettings settings) {
+        if(log != null) {
+            try {
+                settings.log_file = log.getCanonicalPath();
+            } catch(Exception e) {
+                throw new IllegalArgumentException("Log file " + log + " is invalid", e);
+            }
+        }
+        if(cache != null) {
+            try {
+                settings.cache_path = cache.getCanonicalPath();
+            } catch(Exception e) {
+                throw new IllegalArgumentException("Cache path " + cache + " is invalid", e);
+            }
+        }
+    }
+
     public void showDevTools() {
         DevToolsDialog devToolsDlg = new DevToolsDialog(this, "DEV Tools", getBrowser());
         devToolsDlg.setVisible(true);
     }
 
-    private JPanel createContentPanel() {
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        //contentPanel.add(control_pane_, BorderLayout.NORTH);
-
-        // 4) By calling getUIComponent() on the CefBrowser instance, we receive
-        //    an displayable UI component which we can add to our application.
-        contentPanel.add(getBrowser().getUIComponent(), BorderLayout.CENTER);
-        return contentPanel;
-    }
 }

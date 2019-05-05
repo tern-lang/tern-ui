@@ -1,32 +1,28 @@
 package org.ternlang.ui.chrome.load;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.ternlang.ui.OperatingSystem;
+
+import java.io.*;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.ternlang.ui.OperatingSystem;
-
-@Slf4j
 public class LibraryExtractor {
 
-   public static final String CEF_VERSION = "3.3396.1775.g5340bb0";
+   public static final String CEF_VERSION = "3.3538.1852.gcb937fc";
    public static final String CEF_REQUIRED_LIST = "required.list";
+   public static final String CEF_PATH = "cef/" + CEF_VERSION;
+   private static final String[] LINUX_AWT_LIBS = {
+           "libawt.so",
+           "libawt_xawt.so"
+   };
 
    public static File extractTo(File location) throws Exception {
-      File root = new File(location, "cef/" + CEF_VERSION);
+      File root = new File(location, CEF_PATH);
 
-      if(root.exists()) {
+      if(!root.exists()) {
          root.mkdirs();
       }
       extractToPath(root);
@@ -49,16 +45,23 @@ public class LibraryExtractor {
             if (parent.isFile()) {
                parent.delete();
             }
-            log.debug("Writing to {}", file);
+            System.err.println("Writing to " + file);
             parent.mkdirs();
 
             if(file.isDirectory()) {
-               log.debug("Ignoring directory {}", file);
+               System.err.println("Ignoring directory " + file);
             } else {
-               writeTo(resource, file);
+               if(!file.exists()) {
+                  writeTo(resource, file);
+               } else {
+                  System.err.println("File " + file + " already exists");
+               }
+               file.setExecutable(true);
+               file.setReadable(true);
             }
          } catch (Exception e) {
-            log.error("Error writing to {}", file, e);
+            System.err.println("Error writing to " + file);
+            e.printStackTrace();
          }
       });
    }
@@ -83,39 +86,55 @@ public class LibraryExtractor {
    private static List<LibraryDependency> listFiles(OperatingSystem os) throws Exception {
       String path = "/" + os.name().toLowerCase();
       List<String> resources = locateRequiredResources(path);
-
-      return resources.stream()
+      List<LibraryDependency> libraryDependencies = resources.stream()
               .map(resource -> loadDependency(path, resource))
               .filter(dependency -> dependency.isValid())
               .collect(Collectors.toList());
+
+      if(os.isLinux()) {
+         URL[] libResources = LibraryLocator.findLibraries(LINUX_AWT_LIBS);
+
+         for(URL libResource : libResources) {
+            String libPath = libResource.getPath().replaceAll(".*/", "");
+            LibraryDependency dependency = new LibraryDependency(libResource, libPath);
+
+            if(dependency.isValid()) {
+               libraryDependencies.add(dependency);
+            }
+         }
+      }
+      return libraryDependencies;
    }
 
-   @SneakyThrows
    private static List<String> locateRequiredResources(String path) {
       URL list = locateResource(path + "/" + CEF_REQUIRED_LIST);
 
       if (list == null) {
          throw new IllegalArgumentException("No library found at " + path);
       }
-      InputStream source = list.openStream();
-
       try {
-         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-         byte[] chunk = new byte[1024];
-         int count = 0;
+         InputStream source = list.openStream();
 
-         while ((count = source.read(chunk)) != -1) {
-            buffer.write(chunk);
+         try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[1024];
+            int count = 0;
+
+            while ((count = source.read(chunk)) != -1) {
+               buffer.write(chunk);
+            }
+            String[] lines = buffer.toString().split("\\r?\\n");
+            return Arrays.asList(lines)
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(text -> text.trim())
+                    .filter(text -> !text.isEmpty() && !text.startsWith("#"))
+                    .collect(Collectors.toList());
+         } finally {
+            source.close();
          }
-         String[] lines = buffer.toString().split("\\r?\\n");
-         return Arrays.asList(lines)
-                 .stream()
-                 .filter(Objects::nonNull)
-                 .map(text -> text.trim())
-                 .filter(text -> !text.isEmpty() && !text.startsWith("#"))
-                 .collect(Collectors.toList());
-      } finally {
-         source.close();
+      } catch(Exception e) {
+         throw new IllegalStateException("Could not locate " + path, e);
       }
    }
 
@@ -141,11 +160,18 @@ public class LibraryExtractor {
       return new LibraryDependency(resource, normal);
    }
 
-   @Data
-   @AllArgsConstructor
    private static class LibraryDependency {
       private final URL resource;
       private final String path;
+
+      public LibraryDependency(URL resource, String path) {
+         this.resource = resource;
+         this.path = path;
+      }
+
+      public URL getResource() {
+         return resource;
+      }
 
       public boolean isJar() {
          return path.endsWith(".jar");
@@ -155,9 +181,12 @@ public class LibraryExtractor {
          return resource != null;
       }
 
-      @SneakyThrows
       public File getLocation(File root) {
-         return new File(root, path).getCanonicalFile();
+         try {
+            return new File(root, path).getCanonicalFile();
+         } catch (IOException e) {
+            throw new IllegalStateException("Could not get location for " + path + " in " + root, e);
+         }
       }
    }
 

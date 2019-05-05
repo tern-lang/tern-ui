@@ -4,19 +4,10 @@
 
 package org.ternlang.ui.chrome.demo;
 
-import java.awt.BorderLayout;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Objects;
-
-import javax.swing.JPanel;
-
 import org.cef.CefApp;
 import org.cef.CefApp.CefVersion;
 import org.cef.CefClient;
 import org.cef.CefSettings;
-import org.cef.OS;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.browser.CefMessageRouter;
@@ -26,33 +17,43 @@ import org.cef.handler.CefLoadHandlerAdapter;
 import org.cef.handler.CefRequestContextHandlerAdapter;
 import org.cef.network.CefCookieManager;
 import org.ternlang.ui.chrome.dialog.DownloadDialog;
-import org.ternlang.ui.chrome.handler.AppHandler;
-import org.ternlang.ui.chrome.handler.ContextMenuHandler;
-import org.ternlang.ui.chrome.handler.DragHandler;
-import org.ternlang.ui.chrome.handler.JSDialogHandler;
-import org.ternlang.ui.chrome.handler.KeyboardHandler;
-import org.ternlang.ui.chrome.handler.MessageRouterHandler;
-import org.ternlang.ui.chrome.handler.MessageRouterHandlerEx;
-import org.ternlang.ui.chrome.handler.RequestHandler;
+import org.ternlang.ui.chrome.handler.*;
+import org.ternlang.ui.chrome.load.LibraryLoader;
 import org.ternlang.ui.chrome.ui.BrowserFrame;
 import org.ternlang.ui.chrome.ui.ControlPanel;
 import org.ternlang.ui.chrome.ui.MenuBar;
 import org.ternlang.ui.chrome.ui.StatusPanel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+
 public class MainFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
+
     public static void main(String[] args) throws Exception {
+        LibraryLoader.loadFrom(".cef");
+
+        // Perform startup initialization on platforms that require it.
+        if (!CefApp.startup()) {
+            System.out.println("Startup initialization failed!");
+            return;
+        }
+
         // OSR mode is enabled by default on Linux.
         // and disabled by default on Windows and Mac OS X.
-        boolean osrEnabledArg = OS.isLinux();
+        boolean osrEnabledArg = false;
         boolean transparentPaintingEnabledArg = false;
+        boolean createImmediately = false;
         String cookiePath = null;
         for (String arg : args) {
             arg = arg.toLowerCase();
-            if (!OS.isLinux() && arg.equals("--off-screen-rendering-enabled")) {
+            if (arg.equals("--off-screen-rendering-enabled")) {
                 osrEnabledArg = true;
             } else if (arg.equals("--transparent-painting-enabled")) {
                 transparentPaintingEnabledArg = true;
+            } else if (arg.equals("--create-immediately")) {
+                createImmediately = true;
             } else if (arg.startsWith("--cookie-path=")) {
                 cookiePath = arg.substring("--cookie-path=".length());
                 File testPath = new File(cookiePath);
@@ -65,20 +66,13 @@ public class MainFrame extends BrowserFrame {
                 }
             }
         }
+        System.out.println("Offscreen rendering " + (osrEnabledArg ? "enabled" : "disabled"));
 
-        Field field = ClassLoader.class.getDeclaredField("usr_paths");
-        String[] library = Arrays.asList((System.getProperty("java.library.path") + ";C:\\Work\\development\\snapscript\\snap-ui\\snap-ui-win\\src\\main\\resources\\natives").split(File.pathSeparator))
-        		.stream()
-        		.filter(x -> !x.isEmpty())
-        		.filter(Objects::nonNull)
-        		.toArray(String[]::new);
-        
-        field.setAccessible(true);
-        field.set(null, library);
         // MainFrame keeps all the knowledge to display the embedded browser
         // frame.
         final MainFrame frame =
-                new MainFrame(osrEnabledArg, transparentPaintingEnabledArg, cookiePath, args);
+                new MainFrame(osrEnabledArg, transparentPaintingEnabledArg,
+                        createImmediately, cookiePath, args);
         frame.setSize(800, 600);
         frame.setVisible(true);
     }
@@ -88,9 +82,10 @@ public class MainFrame extends BrowserFrame {
     private ControlPanel control_pane_;
     private StatusPanel status_panel_;
     private final CefCookieManager cookieManager_;
+    private boolean browserFocus_ = true;
 
-    public MainFrame(boolean osrEnabled, boolean transparentPaintingEnabled, String cookiePath,
-            String[] args) {
+    public MainFrame(boolean osrEnabled, boolean transparentPaintingEnabled,
+                     boolean createImmediately, String cookiePath, String[] args) {
         CefApp myApp;
         if (CefApp.getState() != CefApp.CefAppState.INITIALIZED) {
             // 1) CefApp is the entry point for JCEF. You can pass
@@ -221,6 +216,7 @@ public class MainFrame extends BrowserFrame {
                 "http://www.google.com", osrEnabled, transparentPaintingEnabled, requestContext);
         setBrowser(browser);
 
+        if (createImmediately) browser.createImmediately();
         //    Last but not least we're setting up the UI for this example implementation.
         getContentPane().add(createContentPanel(), BorderLayout.CENTER);
 

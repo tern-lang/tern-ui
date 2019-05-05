@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-package org.ternlang.ui.chrome.handler;
+package org.ternlang.ui.jcef.detailed.handler;
 
 import org.cef.CefApp;
 import org.cef.CefApp.CefAppState;
@@ -28,13 +28,11 @@ public class AppHandler extends CefAppHandlerAdapter {
     @Override
     public void onRegisterCustomSchemes(CefSchemeRegistrar registrar) {
         if (registrar.addCustomScheme(
-                    SearchSchemeHandler.scheme, true, false,
-                false, false, true, false, true)) {
+                    SearchSchemeHandler.scheme, true, false, false, false, true, false, false)) {
             System.out.println("Added scheme " + SearchSchemeHandler.scheme + "://");
         }
         if (registrar.addCustomScheme(
-                    ClientSchemeHandler.scheme, true, false,
-                false, false, true, false, true)) {
+                    ClientSchemeHandler.scheme, true, false, false, false, true, false, false)) {
             System.out.println("Added scheme " + ClientSchemeHandler.scheme + "://");
         }
     }

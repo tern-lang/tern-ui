@@ -6,10 +6,31 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class LibraryLoader {
+
+   public static boolean isLibraryLoaded(String folder) {
+      File path = libraryPath(folder);
+
+      if(path.exists() && path.isDirectory()) {
+         File cefFolder = new File(path, LibraryExtractor.CEF_PATH);
+
+         if(cefFolder.exists() && cefFolder.isDirectory()) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public static File libraryPath(String folder) {
+      int slash = folder.indexOf(File.separatorChar);
+      boolean exists = new File(folder).exists();
+
+      if(slash == -1 && !exists) {
+         String home = System.getProperty("user.home");
+         return new File(home, folder);
+      }
+      return new File(folder);
+   }
 
    public static void loadFrom(String folder) {
       int slash = folder.indexOf(File.separatorChar);
@@ -18,13 +39,13 @@ public class LibraryLoader {
       if(slash != -1 || exists) {
          File directory = new File(folder);
          
-         log.info("Loading library from {}", directory);
+         System.err.println("Loading library from " + directory);
          loadFromPath(directory);
       } else {
          String home = System.getProperty("user.home");
          File directory = new File(home, folder);
-         
-         log.info("Loading library from {}", directory);
+
+         System.err.println("Loading library from " + directory);
          loadFromPath(directory);
       }
    }
@@ -34,7 +55,8 @@ public class LibraryLoader {
          File location = LibraryExtractor.extractTo(directory);
          String[] path = expandPath(location);
          Field field = findField(ClassLoader.class, "usr_paths");
-         
+
+         System.err.println(Arrays.asList(path));
          field.setAccessible(true);
          field.set(null, path);
       } catch (Exception e) {
@@ -72,6 +94,7 @@ public class LibraryLoader {
 
       System.setProperty("java.library.path", expanded);
       String[] parts = expanded.split(File.pathSeparator);
+
       return Arrays.asList(parts)
               .stream()
               .filter(Objects::nonNull)

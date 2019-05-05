@@ -10,15 +10,14 @@ public class ClientLauncher {
 		File log = new File(temp, "/cef.log");
 		File cache = new File(temp);
 
-      ClientContext context = ClientContext.builder()
-         .debug(true)
-         .title("Browser")
-         .host(URI.create(list[0]).getHost())
-         .port(URI.create(list[0]).getPort())
-			.logFile(log)
-			.cachePath(cache)
-         .arguments(list)
-         .build();
+      ClientContext context = new ClientContext()
+         .setDebug(true)
+         .setTitle("Browser")
+         .setHost(URI.create(list[0]).getHost())
+         .setPort(URI.create(list[0]).getPort())
+		 .setLogFile(log)
+		 .setCachePath(cache)
+         .setArguments(list);
 
 		ClientProvider.provide(ClientEngine.CEF).show(context);
 	}

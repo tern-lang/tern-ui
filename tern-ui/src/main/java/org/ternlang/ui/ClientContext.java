@@ -1,30 +1,104 @@
 package org.ternlang.ui;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
 
-@Data
-@Builder
 public class ClientContext {
 
 	public static final String ICON_PATH = "/icon/icon-large.png";
 	public static final String HOME_FOLDER = ".cef";
 
-	private final File cachePath;
-	private final File logFile;
-	private final String folder; // home folder
-	private final String title;
-	private final String host;
-	private final String icon;
-	private final int width;
-	private final int height;
-	private final int port;
-	private final boolean debug;
-	private final String[] arguments;
+	private File cachePath;
+	private File logFile;
+	private String folder; // home folder
+	private String title;
+	private String host;
+	private String icon;
+	private int width;
+	private int height;
+	private int port;
+	private boolean debug;
+	private String[] arguments;
+
+	public File getCachePath() {
+		return cachePath;
+	}
+
+	public ClientContext setCachePath(File cachePath) {
+		this.cachePath = cachePath;
+		return this;
+	}
+
+	public File getLogFile() {
+		return logFile;
+	}
+
+	public ClientContext setLogFile(File logFile) {
+		this.logFile = logFile;
+		return this;
+	}
+
+	public ClientContext setFolder(String folder) {
+		this.folder = folder;
+		return this;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public ClientContext setTitle(String title) {
+		this.title = title;
+		return this;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public ClientContext setHost(String host) {
+		this.host = host;
+		return this;
+	}
+
+	public ClientContext setWidth(int width) {
+		this.width = width;
+		return this;
+	}
+
+	public ClientContext setHeight(int height) {
+		this.height = height;
+		return this;
+	}
+
+	public ClientContext setIcon(String icon) {
+		this.icon = icon;
+		return this;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public ClientContext setPort(int port) {
+		this.port = port;
+		return this;
+	}
+
+	public boolean isDebug() {
+		return debug;
+	}
+
+	public ClientContext setDebug(boolean debug) {
+		this.debug = debug;
+		return this;
+	}
+
+	public ClientContext setArguments(String[] arguments) {
+		this.arguments = arguments;
+		return this;
+	}
 
 	public int getWidth() {
 		if(width <= 0) {
