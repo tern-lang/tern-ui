@@ -11,7 +11,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LibraryClassPathExtender {
+public class ClassPathExtender {
    
    private static final String ADD_URL_METHOD = "addURL";
    

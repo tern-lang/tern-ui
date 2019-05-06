@@ -1,140 +1,111 @@
 package org.ternlang.ui.chrome.load;
 
-import org.ternlang.ui.OperatingSystem;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Set;
+
+import org.apache.commons.compress.utils.IOUtils;
+import org.ternlang.ui.OperatingSystem;
 
 public class LibraryExtractor {
 
    public static final String CEF_VERSION = "3.3538.1852.gcb937fc";
-   public static final String CEF_REQUIRED_LIST = "required.list";
    public static final String CEF_PATH = "cef/" + CEF_VERSION;
-   private static final String[] LINUX_AWT_LIBS = {
-           "libawt.so",
-           "libawt_xawt.so"
-   };
+   public static final String CEF_ARCHIVE = "cef.tar";
+   public static final List<String> LINUX_AWT_LIBS = Collections.unmodifiableList(
+         Arrays.asList(
+               "libawt.so", 
+               "libawt_xawt.so"
+         )
+   );
+   
 
-   public static File extractTo(File location) throws Exception {
+   public static String[] extractTo(File location) throws Exception {
       File root = new File(location, CEF_PATH);
-
+      Set<File> path = new HashSet<File>();
+      
       if(!root.exists()) {
          root.mkdirs();
       }
-      extractToPath(root);
-      return root;
-   }
-
-   private static void extractToPath(File location) throws Exception {
-      OperatingSystem os = OperatingSystem.resolveSystem();
-
-      listFiles(os).forEach(dependency -> {
-         File file = dependency.getLocation(location);
-         File parent = file.getParentFile();
-         URL resource = dependency.getResource();
-
-         try {
-            if (dependency.isJar()) {
-               String path = file.toString();
-               LibraryClassPathExtender.updateClassPath(path);
-            }
-            if (parent.isFile()) {
-               parent.delete();
-            }
-            System.err.println("Writing to " + file);
-            parent.mkdirs();
-
-            if(file.isDirectory()) {
-               System.err.println("Ignoring directory " + file);
-            } else {
-               if(!file.exists()) {
-                  writeTo(resource, file);
-               } else {
-                  System.err.println("File " + file + " already exists");
+      Set<File> libResources = SystemLibraryLocator.findLibraries(LINUX_AWT_LIBS);
+      
+      path.add(root);
+      path.addAll(libResources);
+      
+      String[] libraryPaths = path.stream()
+            .map(file -> file.isDirectory() ? file : file.getParentFile())
+            .filter(file -> file.isDirectory() && file.exists())
+            .map(file -> {
+               try {
+                  return file.getCanonicalPath();
+               }catch(Exception e) {
+                  throw new IllegalStateException("Could not resolve path " + file, e);
                }
-               file.setExecutable(true);
-               file.setReadable(true);
+            })
+            .toArray(String[]::new);
+      
+      if(isDirectoryEmpty(root)) {
+         extractToPath(root, libResources);
+      } else {
+         System.err.println("Already extracted to " + root);
+      }
+      return libraryPaths;
+   }
+   
+   private static boolean isDirectoryEmpty(File root) {
+      if(root.exists() && root.isDirectory()) {
+         File[] files = root.listFiles();
+         
+         if(files != null) {
+            for(File file : files) {
+               String name = file.getName();
+               
+               if(!name.equals(".") && !name.equals("..")) {
+                  return false;
+               }
             }
-         } catch (Exception e) {
-            System.err.println("Error writing to " + file);
-            e.printStackTrace();
          }
-      });
+      }
+      return true;
    }
 
-   private static void writeTo(URL resource, File location) throws Exception {
-      OutputStream out = new FileOutputStream(location);
-
+   private static void extractToPath(File location, Set<File> libraryPaths) throws Exception {
+      OperatingSystem os = OperatingSystem.resolveSystem();
+      String prefix = os.name().toLowerCase();
+      URL resource = locateResource(prefix + "/" + CEF_ARCHIVE);
+      InputStream archive = resource.openStream();
+      
       try {
-         InputStream source = resource.openStream();
-         byte[] buffer = new byte[1024 * 8];
-         int count = 0;
-
-         while ((count = source.read(buffer)) != -1) {
-            out.write(buffer, 0, count);
-         }
-         source.close();
-      } finally {
-         out.close();
-      }
-   }
-
-   private static List<LibraryDependency> listFiles(OperatingSystem os) throws Exception {
-      String path = "/" + os.name().toLowerCase();
-      List<String> resources = locateRequiredResources(path);
-      List<LibraryDependency> libraryDependencies = resources.stream()
-              .map(resource -> loadDependency(path, resource))
-              .filter(dependency -> dependency.isValid())
-              .collect(Collectors.toList());
-
-      if(os.isLinux()) {
-         URL[] libResources = LibraryLocator.findLibraries(LINUX_AWT_LIBS);
-
-         for(URL libResource : libResources) {
-            String libPath = libResource.getPath().replaceAll(".*/", "");
-            LibraryDependency dependency = new LibraryDependency(libResource, libPath);
-
-            if(dependency.isValid()) {
-               libraryDependencies.add(dependency);
-            }
-         }
-      }
-      return libraryDependencies;
-   }
-
-   private static List<String> locateRequiredResources(String path) {
-      URL list = locateResource(path + "/" + CEF_REQUIRED_LIST);
-
-      if (list == null) {
-         throw new IllegalArgumentException("No library found at " + path);
-      }
-      try {
-         InputStream source = list.openStream();
-
-         try {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            byte[] chunk = new byte[1024];
-            int count = 0;
-
-            while ((count = source.read(chunk)) != -1) {
-               buffer.write(chunk);
-            }
-            String[] lines = buffer.toString().split("\\r?\\n");
-            return Arrays.asList(lines)
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .map(text -> text.trim())
-                    .filter(text -> !text.isEmpty() && !text.startsWith("#"))
-                    .collect(Collectors.toList());
-         } finally {
-            source.close();
-         }
+         TarExtractor.extract(archive, location);
       } catch(Exception e) {
-         throw new IllegalStateException("Could not locate " + path, e);
+         System.err.println("Could not extract to " + location);
+         e.printStackTrace();
+      } finally {
+         archive.close();
+      }
+      for(File libResource : libraryPaths) {
+         String name = libResource.getName();
+         File file = new File(location, name);
+         
+         try(InputStream libStream = new FileInputStream(libResource)) {
+            try(OutputStream outputStream = new FileOutputStream(file)) {
+         
+               try {
+                  IOUtils.copy(libStream, outputStream);
+               } catch(Exception e) {
+                  System.err.println("Could not copy "+ libResource + " to " + location);
+                  e.printStackTrace();
+               }
+            }
+         }
       }
    }
 
@@ -152,43 +123,4 @@ public class LibraryExtractor {
       }
       return resource;
    }
-
-
-   private static LibraryDependency loadDependency(String prefix, String path) {
-      String normal = path.startsWith("/") ? path.substring(1) : path;
-      URL resource = locateResource(prefix + "/" + normal);
-      return new LibraryDependency(resource, normal);
-   }
-
-   private static class LibraryDependency {
-      private final URL resource;
-      private final String path;
-
-      public LibraryDependency(URL resource, String path) {
-         this.resource = resource;
-         this.path = path;
-      }
-
-      public URL getResource() {
-         return resource;
-      }
-
-      public boolean isJar() {
-         return path.endsWith(".jar");
-      }
-
-      public boolean isValid(){
-         return resource != null;
-      }
-
-      public File getLocation(File root) {
-         try {
-            return new File(root, path).getCanonicalFile();
-         } catch (IOException e) {
-            throw new IllegalStateException("Could not get location for " + path + " in " + root, e);
-         }
-      }
-   }
-
-
 }

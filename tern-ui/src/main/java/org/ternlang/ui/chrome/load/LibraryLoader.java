@@ -5,9 +5,33 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class LibraryLoader {
 
+   public static String[] loadFrom(String folder) {
+      File directory = libraryPath(folder);
+
+      System.err.println("Loading library from " + directory);
+      return loadFromPath(directory);
+   }
+
+   public static String[] loadFromPath(File directory) {
+      try {
+         String[] locations = LibraryExtractor.extractTo(directory);
+         String[] path = expandPath(locations);
+         Field field = findField(ClassLoader.class, "usr_paths");
+
+         System.err.println(Arrays.asList(path));
+         field.setAccessible(true);
+         field.set(null, path);
+         
+         return path;
+      } catch (Exception e) {
+         throw new IllegalStateException("Could not load library from " + directory, e);
+      }
+   }
+   
    public static boolean isLibraryLoaded(String folder) {
       File path = libraryPath(folder);
 
@@ -15,7 +39,17 @@ public class LibraryLoader {
          File cefFolder = new File(path, LibraryExtractor.CEF_PATH);
 
          if(cefFolder.exists() && cefFolder.isDirectory()) {
-            return true;
+            File[] files = cefFolder.listFiles();
+            
+            if(files != null) {
+               for(File file : files) {
+                  String name = file.getName();
+                  
+                  if(!name.equals(".") && !name.equals("..")) {
+                     return true;
+                  }
+               }
+            }
          }
       }
       return false;
@@ -30,38 +64,6 @@ public class LibraryLoader {
          return new File(home, folder);
       }
       return new File(folder);
-   }
-
-   public static void loadFrom(String folder) {
-      int slash = folder.indexOf(File.separatorChar);
-      boolean exists = new File(folder).exists();
-
-      if(slash != -1 || exists) {
-         File directory = new File(folder);
-         
-         System.err.println("Loading library from " + directory);
-         loadFromPath(directory);
-      } else {
-         String home = System.getProperty("user.home");
-         File directory = new File(home, folder);
-
-         System.err.println("Loading library from " + directory);
-         loadFromPath(directory);
-      }
-   }
-
-   public static void loadFromPath(File directory) {
-      try {
-         File location = LibraryExtractor.extractTo(directory);
-         String[] path = expandPath(location);
-         Field field = findField(ClassLoader.class, "usr_paths");
-
-         System.err.println(Arrays.asList(path));
-         field.setAccessible(true);
-         field.set(null, path);
-      } catch (Exception e) {
-         throw new IllegalStateException("Could not load library from " + directory, e);
-      }
    }
    
    private static Field findField(Class type, String name) {
@@ -87,10 +89,13 @@ public class LibraryLoader {
       }
    }
 
-   private static String[] expandPath(File location) throws Exception {
-      String path = location.getCanonicalPath();
+   private static String[] expandPath(String[] location) throws Exception {
+      String combined = Arrays.asList(location)
+            .stream()
+            .collect(Collectors.joining(File.separator));
+      
       String current = System.getProperty("java.library.path");
-      String expanded = current + File.pathSeparator + path;
+      String expanded = current + File.pathSeparator + combined;
 
       System.setProperty("java.library.path", expanded);
       String[] parts = expanded.split(File.pathSeparator);

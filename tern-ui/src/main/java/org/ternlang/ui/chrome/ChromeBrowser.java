@@ -1,43 +1,22 @@
 package org.ternlang.ui.chrome;
 
-import org.ternlang.ui.chrome.load.LibraryLoader;
-import org.ternlang.ui.chrome.ui.BrowserFrame;
-
 import java.io.File;
 import java.net.URI;
+
+import org.ternlang.ui.chrome.load.DeploymentManager;
+import org.ternlang.ui.chrome.ui.BrowserFrame;
 
 public class ChromeBrowser {
 
     private static final String LIBRARY_PATH = ".cef";
 
-	public static void main(String[] args) throws Exception {
-        if (LibraryLoader.isLibraryLoaded(LIBRARY_PATH)) {
-            show(args);
-        } else {
-            LibraryLoader.loadFrom(LIBRARY_PATH);
-            relaunch();
-        }
-	}
-
-	private static void relaunch() throws Exception {
-	    String javaHome = System.getProperty("java.home");
-	    String classPath = System.getProperty("java.class.path");
-	    new ProcessBuilder(
-	            javaHome + "/bin/java",
-                "-cp",
-                classPath,
-                ChromeBrowser.class.getName())
-                .directory(new File("."))
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .redirectError(ProcessBuilder.Redirect.INHERIT)
-                .start()
-                .waitFor();
+	 public static void main(String[] args) throws Exception {
+	    if(DeploymentManager.deploymentDone(LIBRARY_PATH, ChromeBrowser.class, args)) {
+	       show(args);
+	    }
     }
 
     public static void show(String[] args) throws Exception {
-        LibraryLoader.loadFrom(".cef");
-
         // OSR mode is enabled by default on Linux.
         // and disabled by default on Windows and Mac OS X.
         boolean osrEnabledArg = false;
