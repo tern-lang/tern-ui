@@ -23,6 +23,7 @@ public class TarExtractor {
               if (!parent.exists()) {
                   parent.mkdirs();
               }
+              System.err.println("Installing: " + curfile);
               try(FileOutputStream newFile = new FileOutputStream(curfile)) {
                  IOUtils.copy(fin, newFile);
               }

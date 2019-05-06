@@ -1,16 +1,28 @@
 package org.ternlang.ui.chrome;
 
-import org.ternlang.ui.*;
+import org.ternlang.ui.Client;
+import org.ternlang.ui.ClientCloseListener;
+import org.ternlang.ui.ClientContext;
+import org.ternlang.ui.ClientControl;
+import org.ternlang.ui.WindowIcon;
+import org.ternlang.ui.WindowIconLoader;
 import org.ternlang.ui.chrome.load.LibraryLoader;
-import org.ternlang.ui.chrome.ui.BrowserFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ChromeClient implements Client {
+
+	private final ScheduledThreadPoolExecutor executor;
+
+	public ChromeClient() {
+		this.executor = new ScheduledThreadPoolExecutor(2);
+	}
 
 	public ClientControl show(ClientContext context) {
 		int width = context.getWidth();
@@ -24,10 +36,10 @@ public class ChromeClient implements Client {
 		URI target = URI.create(address);
 
 		try {
-		   LibraryLoader.loadFrom(folder);
-		} catch(Throwable e) {
-		   System.err.println("Error loading library from " + folder);
-		   e.printStackTrace();
+			LibraryLoader.loadFrom(folder);
+		} catch (Throwable e) {
+			System.err.println("Error loading library from " + folder);
+			e.printStackTrace();
 		}
 		WindowIcon icon = WindowIconLoader.loadIcon(path);
 		String[] arguments = context.getArguments();
@@ -43,11 +55,10 @@ public class ChromeClient implements Client {
 				arguments);
 
 		frame.setTitle(title);
-		frame.setSize(width + 20, height + 20);
-		frame.setVisible(true);
 		frame.setSize(width, height);
-		frame.invalidate();
+		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		reload(frame);
 
 		if (icon != null) {
 			URL resource = icon.getResource();
@@ -68,6 +79,18 @@ public class ChromeClient implements Client {
 				SwingUtilities.invokeLater(() -> frame.showDevTools());
 			}
 		};
+	}
+
+	public void reload(ChromeFrame frame) {
+		executor.schedule(() -> {
+			try {
+				SwingUtilities.invokeLater(() -> {
+					frame.getBrowser().reloadIgnoreCache();
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}, 5, TimeUnit.SECONDS);
 	}
 
 }

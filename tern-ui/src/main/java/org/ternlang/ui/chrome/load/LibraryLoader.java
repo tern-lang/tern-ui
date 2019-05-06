@@ -1,5 +1,7 @@
 package org.ternlang.ui.chrome.load;
 
+import org.ternlang.ui.OperatingSystem;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -22,11 +24,11 @@ public class LibraryLoader {
          String[] path = expandPath(locations);
          
          try {
-            Field field = findField(ClassLoader.class, "usr_paths");
-
-            System.err.println(Arrays.asList(path));
-            field.setAccessible(true);
-            field.set(null, path);
+//            Field field = findField(ClassLoader.class, "usr_paths");
+//
+//            System.err.println(Arrays.asList(path));
+//            field.setAccessible(true);
+//            field.set(null, path);
          } catch(Throwable e) {
            System.err.println("Could not update USR paths");
          }
@@ -59,8 +61,12 @@ public class LibraryLoader {
       }
    }
    public static boolean isLibraryDeployed(String folder) {
+      OperatingSystem os = OperatingSystem.resolveSystem();
       File path = libraryPath(folder);
 
+      if(os.isMac()) {
+         return LibraryExtractor.isMacLibraryInstalled(path);
+      }
       if(path.exists() && path.isDirectory()) {
          File cefFolder = new File(path, LibraryExtractor.CEF_PATH);
 
@@ -80,7 +86,7 @@ public class LibraryLoader {
       }
       return false;
    }
-   
+
    public static File installPath(String folder) {
       File libraryPath = libraryPath(folder);
       return new File(libraryPath, LibraryExtractor.CEF_PATH);
@@ -104,8 +110,6 @@ public class LibraryLoader {
       
       String current = System.getProperty("java.library.path");
       String expanded = current + File.pathSeparator + combined;
-
-      System.setProperty("java.library.path", expanded);
       String[] parts = expanded.split(File.pathSeparator);
 
       return Arrays.asList(parts)

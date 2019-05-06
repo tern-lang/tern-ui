@@ -1,14 +1,14 @@
 package org.ternlang.ui.chrome.load;
 
-import java.awt.Desktop;
+import org.ternlang.ui.OperatingSystem;
+
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.ternlang.ui.OperatingSystem;
 
 public class ApplicationLauncher {
 
@@ -23,21 +23,20 @@ public class ApplicationLauncher {
    }
    
    private static void launchWithDesktop(File installFolder) {
-      File[] files = installFolder.listFiles();
-      
-      if(files != null) {
-         for(File file : files) {
-            String name = file.getName();
-            
-            if(name.endsWith(".app") && file.isDirectory()) {
-               try {
-                  String app = file.getCanonicalPath();
-                  System.err.println("Launching: " + app);
-                  Desktop.getDesktop().open(file); // should open mac application
-               } catch(Exception e) {
-                  e.printStackTrace();
-               }
-            }
+      File[] installedFiles = installFolder.listFiles();
+      File installApp = Arrays.asList(installedFiles)
+            .stream()
+            .filter(file -> file.getName().endsWith(".app") && file.isDirectory())
+            .findFirst()
+            .get();
+
+      if(installApp != null) {
+         try {
+            String app = installApp.getCanonicalPath();
+            System.err.println("Launching " + app);
+            Desktop.getDesktop().open(installApp); // should open mac application
+         } catch(Exception e) {
+            e.printStackTrace();
          }
       }
    }

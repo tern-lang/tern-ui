@@ -30,6 +30,13 @@ import java.net.URI;
 public class ChromeFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
 
+    public static void initializeChrome(){
+        // Perform startup initialization on platforms that require it.
+        if (!CefApp.startup()) {
+            throw new IllegalStateException("Could not start chrome");
+        }
+    }
+
     // Linux has some weird static initialisation
     public static ChromeFrame createChromeFrame(
             URI target,
@@ -42,11 +49,8 @@ public class ChromeFrame extends BrowserFrame {
             boolean createImmediately,
             String[] args)
     {
-        LibraryLoader.loadFrom(libraryFolder);
-
         // Perform startup initialization on platforms that require it.
         if (!CefApp.startup()) {
-            System.out.println("Startup initialization failed!");
             throw new IllegalStateException("Could not start chrome");
         }
         final ChromeFrameListener listener = new ChromeLogListener();

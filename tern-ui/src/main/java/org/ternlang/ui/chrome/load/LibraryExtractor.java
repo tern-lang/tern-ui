@@ -3,6 +3,8 @@ package org.ternlang.ui.chrome.load;
 import org.ternlang.ui.OperatingSystem;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
@@ -79,6 +81,89 @@ public class LibraryExtractor {
          e.printStackTrace();
       } finally {
          archive.close();
+      }
+      if(os.isMac()) {
+         installMacClassPath(location);
+      }
+   }
+
+   public static boolean isMacLibraryInstalled(File location) {
+      File root = new File(location, CEF_PATH);
+      File[] installedFiles = root.listFiles();
+
+      if(installedFiles != null) {
+         File installFolder = Arrays.asList(installedFiles)
+               .stream()
+               .filter(file -> file.getName().endsWith(".app") && file.isDirectory())
+               .map(file -> new File(file, "Contents/Java/"))
+               .filter(file -> file.exists() && file.isDirectory())
+               .findFirst()
+               .get();
+
+         if (installFolder != null) {
+            File[] jarFiles = installFolder.listFiles();
+            return Arrays.asList(jarFiles)
+                  .stream()
+                  .anyMatch(entry -> entry.getName().endsWith(".jar"));
+         }
+      }
+      return false;
+   }
+
+   private static void installMacClassPath(File location) {
+      File[] installedFiles = location.listFiles();
+      File installFolder = Arrays.asList(installedFiles)
+            .stream()
+            .filter(file -> file.getName().endsWith(".app") && file.isDirectory())
+            .map(file -> new File(file, "Contents/Java"))
+            .filter(file -> file.exists() && file.isDirectory())
+            .findFirst()
+            .get();
+
+      if(installFolder != null) {
+         try {
+            String classPath = System.getProperty("java.class.path", "");
+            String[] classPathEntries = classPath.split(File.pathSeparator);
+
+            System.err.println("Installing JAR files to " + installFolder);
+
+            Arrays.asList(classPathEntries)
+                  .stream()
+                  .filter(entry -> entry.endsWith(".jar"))
+                  .map(File::new)
+                  .filter(file -> file.exists() && file.isFile())
+                  .forEach(file -> {
+                     String fileName = file.getName();
+                     File destination = new File(installFolder, fileName);
+
+                     try {
+                        System.err.println("Installing " + destination);
+                        copyFile(file, destination);
+                     } catch (Exception e) {
+                        System.err.println("Could not extract to " + destination);
+                        e.printStackTrace();
+                     }
+                  });
+         } catch(Exception e) {
+            e.printStackTrace();
+         }
+      }
+   }
+
+   private static void copyFile(File source, File destination) {
+      try {
+         try(FileInputStream inputStream = new FileInputStream(source)) {
+            try (FileOutputStream outputStream = new FileOutputStream(destination)) {
+               byte[] chunk = new byte[8192];
+               int count = 0;
+
+               while((count = inputStream.read(chunk)) != -1) {
+                  outputStream.write(chunk, 0, count);
+               }
+            }
+         }
+      } catch(Exception e) {
+         e.printStackTrace();
       }
    }
 
