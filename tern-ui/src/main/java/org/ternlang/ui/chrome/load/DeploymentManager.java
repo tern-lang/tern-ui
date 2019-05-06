@@ -2,7 +2,7 @@ package org.ternlang.ui.chrome.load;
 
 public class DeploymentManager {
 
-   public static DeploymentTask deploy(String deployPath, Class mainClass, String[] arguments, String... properties) {
+   public static DeploymentTask deploy(String deployPath, String mainClass, String[] arguments, String... properties) {
        boolean alreadyDeployed = LibraryLoader.isLibraryDeployed(deployPath);
        String[] libraryPaths = LibraryLoader.loadFrom(deployPath);
        Runnable mainTask = () -> ApplicationLauncher.launch(mainClass, arguments, libraryPaths, properties);

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class ApplicationLauncher {
 
-   public static void launch(Class mainClass, String[] arguments, String[] libraryPaths, String... properties) {
+   public static void launch(String mainClass, String[] arguments, String[] libraryPaths, String... properties) {
        String javaHome = System.getProperty("java.home");
        String classPath = System.getProperty("java.class.path");
        String libraryPath = Arrays.asList(libraryPaths)
@@ -31,7 +31,7 @@ public class ApplicationLauncher {
                   command.add("-D" + property);
               }
           }
-          command.add(mainClass.getName());
+          command.add(mainClass);
           
           for(String argument : arguments) {
              command.add(argument);
