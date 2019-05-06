@@ -1,22 +1,15 @@
 package org.ternlang.ui.chrome;
 
+import org.ternlang.ui.chrome.ui.BrowserFrame;
+
 import java.io.File;
 import java.net.URI;
 
-import org.ternlang.ui.chrome.load.DeploymentManager;
-import org.ternlang.ui.chrome.ui.BrowserFrame;
-
 public class ChromeBrowser {
 
-    private static final String LIBRARY_PATH = ".cef";
+    public static final String LIBRARY_PATH = ".cef";
 
-	 public static void main(String[] args) throws Exception {
-	    if(DeploymentManager.deploymentDone(LIBRARY_PATH, ChromeBrowser.class, args)) {
-	       show(args);
-	    }
-    }
-
-    public static void show(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         // OSR mode is enabled by default on Linux.
         // and disabled by default on Windows and Mac OS X.
         boolean osrEnabledArg = false;
@@ -61,5 +54,8 @@ public class ChromeBrowser {
 
         frame.setSize(800, 600);
         frame.setVisible(true);
+        frame.invalidate();
+        frame.setSize(1000, 800);
+        frame.invalidate();
     }
 }

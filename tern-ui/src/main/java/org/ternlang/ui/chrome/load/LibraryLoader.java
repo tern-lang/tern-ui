@@ -1,8 +1,6 @@
 package org.ternlang.ui.chrome.load;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,39 +18,11 @@ public class LibraryLoader {
       try {
          String[] locations = LibraryExtractor.extractTo(directory);
          String[] path = expandPath(locations);
-         Field field = findField(ClassLoader.class, "usr_paths");
-
-         System.err.println(Arrays.asList(path));
-         field.setAccessible(true);
-         field.set(null, path);
          
          return path;
       } catch (Exception e) {
          throw new IllegalStateException("Could not load library from " + directory, e);
       }
-   }
-   
-   public static boolean isLibraryLoaded(String folder) {
-      File path = libraryPath(folder);
-
-      if(path.exists() && path.isDirectory()) {
-         File cefFolder = new File(path, LibraryExtractor.CEF_PATH);
-
-         if(cefFolder.exists() && cefFolder.isDirectory()) {
-            File[] files = cefFolder.listFiles();
-            
-            if(files != null) {
-               for(File file : files) {
-                  String name = file.getName();
-                  
-                  if(!name.equals(".") && !name.equals("..")) {
-                     return true;
-                  }
-               }
-            }
-         }
-      }
-      return false;
    }
 
    public static File libraryPath(String folder) {
@@ -64,29 +34,6 @@ public class LibraryLoader {
          return new File(home, folder);
       }
       return new File(folder);
-   }
-   
-   private static Field findField(Class type, String name) {
-      try {
-         Method method = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
-        
-         if(!method.isAccessible()) {
-            method.setAccessible(true);
-         }
-         Field[] list = (Field[])method.invoke(type, false);
-         
-         for(Field entry : list) {
-            String declaration = entry.getName();
-            
-            if(declaration.equals(name)) {
-               entry.setAccessible(true);
-               return entry;
-            }
-         }
-         return type.getDeclaredField("usr_paths");
-      } catch (Exception e) {
-         throw new IllegalStateException("Could not find library path field", e);
-      }
    }
 
    private static String[] expandPath(String[] location) throws Exception {

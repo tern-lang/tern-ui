@@ -14,7 +14,7 @@ public class ApplicationLauncher {
        String classPath = System.getProperty("java.class.path");
        String libraryPath = Arrays.asList(libraryPaths)
              .stream()
-             .collect(Collectors.joining(File.separator));
+             .collect(Collectors.joining(File.pathSeparator));
              
        try {
           File directory = new File(".");

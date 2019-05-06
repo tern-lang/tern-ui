@@ -1,19 +1,11 @@
 package org.ternlang.ui.chrome.load;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.compress.utils.IOUtils;
 import org.ternlang.ui.OperatingSystem;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 public class LibraryExtractor {
 
@@ -26,7 +18,6 @@ public class LibraryExtractor {
                "libawt_xawt.so"
          )
    );
-   
 
    public static String[] extractTo(File location) throws Exception {
       File root = new File(location, CEF_PATH);
@@ -40,24 +31,22 @@ public class LibraryExtractor {
       path.add(root);
       path.addAll(libResources);
       
-      String[] libraryPaths = path.stream()
-            .map(file -> file.isDirectory() ? file : file.getParentFile())
-            .filter(file -> file.isDirectory() && file.exists())
-            .map(file -> {
-               try {
-                  return file.getCanonicalPath();
-               }catch(Exception e) {
-                  throw new IllegalStateException("Could not resolve path " + file, e);
-               }
-            })
-            .toArray(String[]::new);
-      
       if(isDirectoryEmpty(root)) {
-         extractToPath(root, libResources);
+         extractToPath(root);
       } else {
          System.err.println("Already extracted to " + root);
       }
-      return libraryPaths;
+      return path.stream()
+           .map(file -> file.isDirectory() ? file : file.getParentFile())
+           .filter(file -> file.isDirectory() && file.exists())
+           .map(file -> {
+              try {
+                 return file.getCanonicalPath();
+              }catch(Exception e) {
+                 throw new IllegalStateException("Could not resolve path " + file, e);
+              }
+           })
+           .toArray(String[]::new);
    }
    
    private static boolean isDirectoryEmpty(File root) {
@@ -77,7 +66,7 @@ public class LibraryExtractor {
       return true;
    }
 
-   private static void extractToPath(File location, Set<File> libraryPaths) throws Exception {
+   private static void extractToPath(File location) throws Exception {
       OperatingSystem os = OperatingSystem.resolveSystem();
       String prefix = os.name().toLowerCase();
       URL resource = locateResource(prefix + "/" + CEF_ARCHIVE);
@@ -90,22 +79,6 @@ public class LibraryExtractor {
          e.printStackTrace();
       } finally {
          archive.close();
-      }
-      for(File libResource : libraryPaths) {
-         String name = libResource.getName();
-         File file = new File(location, name);
-         
-         try(InputStream libStream = new FileInputStream(libResource)) {
-            try(OutputStream outputStream = new FileOutputStream(file)) {
-         
-               try {
-                  IOUtils.copy(libStream, outputStream);
-               } catch(Exception e) {
-                  System.err.println("Could not copy "+ libResource + " to " + location);
-                  e.printStackTrace();
-               }
-            }
-         }
       }
    }
 

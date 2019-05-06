@@ -56,7 +56,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>org.ternlang.ui.chrome.ChromeBrowser</mainClass>
+              <mainClass>org.ternlang.ui.chrome.ChromeLauncher</mainClass>
             </manifest>
           </archive>
         </configuration>
