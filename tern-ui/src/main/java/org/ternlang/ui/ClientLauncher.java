@@ -19,6 +19,6 @@ public class ClientLauncher {
 		 .setCachePath(cache)
          .setArguments(list);
 
-		ClientProvider.provide(ClientEngine.CEF).show(context);
+		ClientProvider.provide().show(context);
 	}
 }

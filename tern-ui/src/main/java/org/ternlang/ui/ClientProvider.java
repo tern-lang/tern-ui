@@ -4,11 +4,7 @@ import org.ternlang.ui.chrome.ChromeClient;
 
 public class ClientProvider {
 
-	public static Client provide(ClientEngine engine){
-		OperatingSystem os = OperatingSystem.resolveSystem();
-
-		System.err.println("Engine is " + engine);
-
+	public static Client provide(){
 		return new ChromeClient();
 	}
 }
