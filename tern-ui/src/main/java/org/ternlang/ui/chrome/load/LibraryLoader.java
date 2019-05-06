@@ -92,7 +92,7 @@ public class LibraryLoader {
    private static String[] expandPath(String[] location) throws Exception {
       String combined = Arrays.asList(location)
             .stream()
-            .collect(Collectors.joining(File.separator));
+            .collect(Collectors.joining(File.pathSeparator));
       
       String current = System.getProperty("java.library.path");
       String expanded = current + File.pathSeparator + combined;

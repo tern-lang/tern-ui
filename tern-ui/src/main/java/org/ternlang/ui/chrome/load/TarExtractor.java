@@ -26,6 +26,8 @@ public class TarExtractor {
               try(FileOutputStream newFile = new FileOutputStream(curfile)) {
                  IOUtils.copy(fin, newFile);
               }
+              curfile.setExecutable(true);
+              curfile.setReadable(true);
           }
       }
   }
