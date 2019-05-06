@@ -43,8 +43,11 @@ public class ChromeClient implements Client {
 				arguments);
 
 		frame.setTitle(title);
-		frame.setSize(width, height);
+		frame.setSize(width + 20, height + 20);
 		frame.setVisible(true);
+		frame.setSize(width, height);
+		frame.invalidate();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		if (icon != null) {
 			URL resource = icon.getResource();

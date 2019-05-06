@@ -2,6 +2,7 @@ package org.ternlang.ui.chrome;
 
 import org.ternlang.ui.chrome.ui.BrowserFrame;
 
+import javax.swing.*;
 import java.io.File;
 import java.net.URI;
 
@@ -57,5 +58,6 @@ public class ChromeBrowser {
         frame.invalidate();
         frame.setSize(1000, 800);
         frame.invalidate();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 }
