@@ -21,12 +21,43 @@ public class LibraryLoader {
          String[] locations = LibraryExtractor.extractTo(directory);
          String[] path = expandPath(locations);
          
+         try {
+            Field field = findField(ClassLoader.class, "usr_paths");
+
+            System.err.println(Arrays.asList(path));
+            field.setAccessible(true);
+            field.set(null, path);
+         } catch(Throwable e) {
+           System.err.println("Could not update USR paths");
+         }
          return path;
       } catch (Exception e) {
          throw new IllegalStateException("Could not load library from " + directory, e);
       }
    }
-
+   
+   private static Field findField(Class type, String name) {
+      try {
+         Method method = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+        
+         if(!method.isAccessible()) {
+            method.setAccessible(true);
+         }
+         Field[] list = (Field[])method.invoke(type, false);
+         
+         for(Field entry : list) {
+            String declaration = entry.getName();
+            
+            if(declaration.equals(name)) {
+               entry.setAccessible(true);
+               return entry;
+            }
+         }
+         return type.getDeclaredField("usr_paths");
+      } catch (Exception e) {
+         throw new IllegalStateException("Could not find library path field", e);
+      }
+   }
    public static boolean isLibraryDeployed(String folder) {
       File path = libraryPath(folder);
 
