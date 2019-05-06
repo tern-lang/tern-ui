@@ -1,5 +1,6 @@
 package org.ternlang.ui.chrome.load;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,9 +8,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.ternlang.ui.OperatingSystem;
+
 public class ApplicationLauncher {
 
-   public static void launch(String mainClass, String[] arguments, String[] libraryPaths, String... properties) {
+   public static void launch(String mainClass, String[] arguments, File installFolder, String[] libraryPaths, String... properties) {
+      OperatingSystem os = OperatingSystem.resolveSystem();
+      
+      if(os.isLinux() || os.isWindows()) {
+         launchWithJava(mainClass, arguments, libraryPaths, properties);
+      } else {
+         launchWithDesktop(installFolder);
+      }
+   }
+   
+   private static void launchWithDesktop(File installFolder) {
+      File[] files = installFolder.listFiles();
+      
+      if(files != null) {
+         for(File file : files) {
+            String name = file.getName();
+            
+            if(name.endsWith(".app") && file.isDirectory()) {
+               try {
+                  String app = file.getCanonicalPath();
+                  System.err.println("Launching: " + app);
+                  Desktop.getDesktop().open(file); // should open mac application
+               } catch(Exception e) {
+                  e.printStackTrace();
+               }
+            }
+         }
+      }
+   }
+   
+   private static void launchWithJava(String mainClass, String[] arguments, String[] libraryPaths, String... properties) {
        String javaHome = System.getProperty("java.home");
        String classPath = System.getProperty("java.class.path");
        String libraryPath = Arrays.asList(libraryPaths)

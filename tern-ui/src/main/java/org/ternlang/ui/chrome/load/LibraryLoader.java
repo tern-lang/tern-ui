@@ -80,6 +80,11 @@ public class LibraryLoader {
       }
       return false;
    }
+   
+   public static File installPath(String folder) {
+      File libraryPath = libraryPath(folder);
+      return new File(libraryPath, LibraryExtractor.CEF_PATH);
+   }
 
    public static File libraryPath(String folder) {
       int slash = folder.indexOf(File.separatorChar);
