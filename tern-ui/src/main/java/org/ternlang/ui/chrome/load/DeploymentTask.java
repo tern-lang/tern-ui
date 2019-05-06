@@ -10,7 +10,7 @@ public class DeploymentTask {
         this.forkTask = forkTask;
     }
 
-    public Runnable getForlTask() {
+    public Runnable getForkTask() {
         return forkTask;
     }
 

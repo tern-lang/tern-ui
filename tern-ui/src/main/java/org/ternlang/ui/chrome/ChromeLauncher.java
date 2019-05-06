@@ -10,7 +10,7 @@ public class ChromeLauncher {
     public static void main(String[] args) throws Exception {
         String mainClass = ChromeBrowser.class.getName();
         DeploymentTask task = DeploymentManager.deploy(LIBRARY_PATH, mainClass, args);
-        Runnable forkTask = task.getForlTask();
+        Runnable forkTask = task.getForkTask();
 
         forkTask.run();
     }
