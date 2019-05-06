@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class ApplicationLauncher {
 
-   public static void launch(Class mainClass, String[] arguments, String[] libraryPaths) {
+   public static void launch(Class mainClass, String[] arguments, String[] libraryPaths, String... properties) {
        String javaHome = System.getProperty("java.home");
        String classPath = System.getProperty("java.class.path");
        String libraryPath = Arrays.asList(libraryPaths)
@@ -23,6 +23,14 @@ public class ApplicationLauncher {
           command.add(javaHome + "/bin/java");
           command.add("-cp");
           command.add(classPath);
+
+          for(String property : properties) {
+              if(property.startsWith("-D")) {
+                  command.add(property);
+              } else {
+                  command.add("-D" + property);
+              }
+          }
           command.add(mainClass.getName());
           
           for(String argument : arguments) {

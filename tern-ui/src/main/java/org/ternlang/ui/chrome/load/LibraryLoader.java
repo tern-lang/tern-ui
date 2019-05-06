@@ -1,6 +1,8 @@
 package org.ternlang.ui.chrome.load;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,6 +25,29 @@ public class LibraryLoader {
       } catch (Exception e) {
          throw new IllegalStateException("Could not load library from " + directory, e);
       }
+   }
+
+   public static boolean isLibraryDeployed(String folder) {
+      File path = libraryPath(folder);
+
+      if(path.exists() && path.isDirectory()) {
+         File cefFolder = new File(path, LibraryExtractor.CEF_PATH);
+
+         if(cefFolder.exists() && cefFolder.isDirectory()) {
+            File[] files = cefFolder.listFiles();
+
+            if(files != null) {
+               for(File file : files) {
+                  String name = file.getName();
+
+                  if(!name.equals(".") && !name.equals("..")) {
+                     return true;
+                  }
+               }
+            }
+         }
+      }
+      return false;
    }
 
    public static File libraryPath(String folder) {
