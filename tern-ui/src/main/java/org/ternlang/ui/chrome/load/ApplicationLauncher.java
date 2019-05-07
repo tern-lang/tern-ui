@@ -53,6 +53,8 @@ public class ApplicationLauncher {
           List<String> command = new ArrayList<String>();
           
           command.add(javaHome + "/bin/java");
+          command.add("-XX:+IgnoreUnrecognizedVMOptions");
+          command.add("--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED");
           command.add("-cp");
           command.add(classPath);
 
