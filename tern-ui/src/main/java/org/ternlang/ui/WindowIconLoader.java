@@ -36,7 +36,7 @@ public class WindowIconLoader {
     private static URL findResource(String path) {
         OperatingSystem system = OperatingSystem.resolveSystem();
 
-        if(system.isWindows()) {
+        if(system.isWindows() || system.isLinux()) {
             try {
                 ClassLoader loader = WindowIconLoader.class.getClassLoader();
                 URL source = loader.getResource(path);
