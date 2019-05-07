@@ -1,11 +1,6 @@
 package org.ternlang.ui.chrome;
 
-import org.ternlang.ui.Client;
-import org.ternlang.ui.ClientCloseListener;
-import org.ternlang.ui.ClientContext;
-import org.ternlang.ui.ClientControl;
-import org.ternlang.ui.WindowIcon;
-import org.ternlang.ui.WindowIconLoader;
+import org.ternlang.ui.*;
 import org.ternlang.ui.chrome.load.LibraryLoader;
 
 import javax.swing.*;
@@ -14,7 +9,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ChromeClient implements Client {
 
@@ -58,7 +52,6 @@ public class ChromeClient implements Client {
 		frame.setSize(width, height);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		reload(frame);
 
 		if (icon != null) {
 			URL resource = icon.getResource();
@@ -80,17 +73,4 @@ public class ChromeClient implements Client {
 			}
 		};
 	}
-
-	public void reload(ChromeFrame frame) {
-		executor.schedule(() -> {
-			try {
-				SwingUtilities.invokeLater(() -> {
-					frame.getBrowser().reloadIgnoreCache();
-				});
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}, 5, TimeUnit.SECONDS);
-	}
-
 }
