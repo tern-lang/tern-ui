@@ -155,7 +155,7 @@ public class MainFrame extends BrowserFrame {
             }
             @Override
             public void onStatusMessage(CefBrowser browser, String value) {
-                status_panel_.setStatusText(value);
+                //status_panel_.setStatusText(value);
             }
         });
 

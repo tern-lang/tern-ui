@@ -4,6 +4,12 @@
 
 package org.ternlang.ui.chrome;
 
+import java.awt.BorderLayout;
+import java.io.File;
+import java.net.URI;
+
+import javax.swing.JPanel;
+
 import org.cef.CefApp;
 import org.cef.CefApp.CefVersion;
 import org.cef.CefClient;
@@ -16,16 +22,19 @@ import org.cef.handler.CefDisplayHandlerAdapter;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.cef.handler.CefRequestContextHandlerAdapter;
 import org.cef.network.CefCookieManager;
+import org.ternlang.ui.OperatingSystem;
 import org.ternlang.ui.chrome.dialog.DevToolsDialog;
 import org.ternlang.ui.chrome.dialog.DownloadDialog;
-import org.ternlang.ui.chrome.handler.*;
-import org.ternlang.ui.chrome.load.LibraryLoader;
+import org.ternlang.ui.chrome.handler.AppHandler;
+import org.ternlang.ui.chrome.handler.ContextMenuHandler;
+import org.ternlang.ui.chrome.handler.DragHandler;
+import org.ternlang.ui.chrome.handler.JSDialogHandler;
+import org.ternlang.ui.chrome.handler.KeyboardHandler;
+import org.ternlang.ui.chrome.handler.MessageRouterHandler;
+import org.ternlang.ui.chrome.handler.MessageRouterHandlerEx;
+import org.ternlang.ui.chrome.handler.RequestHandler;
 import org.ternlang.ui.chrome.ui.BrowserFrame;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.net.URI;
+import org.ternlang.ui.chrome.ui.StatusPanel;
 
 public class ChromeFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
@@ -64,6 +73,8 @@ public class ChromeFrame extends BrowserFrame {
 
     private final CefClient client_;
     private String errorMsg_ = "";
+    private StatusPanel statusPanel;
+    private JPanel contentPanel;
     private final CefCookieManager cookieManager_;
 
     private ChromeFrame(ChromeFrameListener listener, URI address, File log, File cache,
@@ -155,9 +166,19 @@ public class ChromeFrame extends BrowserFrame {
                     boolean canGoBack, boolean canGoForward) {
                 listener.onLoadingStateChange(browser, isLoading, canGoBack, canGoForward);
 
+                if(statusPanel != null) {
+                    statusPanel.setIsInProgress(isLoading);
+                }
                 if (!isLoading && !errorMsg_.isEmpty()) {
                     browser.loadString(errorMsg_, address.toString());
                     errorMsg_ = "";
+                }
+            }
+
+            @Override
+            public void onLoadEnd(CefBrowser browser, CefFrame frame, int httpStatusCode) {
+                if(statusPanel != null && contentPanel != null) {
+                    contentPanel.remove(statusPanel);
                 }
             }
 
@@ -205,11 +226,18 @@ public class ChromeFrame extends BrowserFrame {
     }
 
     private JPanel createContentPanel() {
-        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel = new JPanel(new BorderLayout());
+
+        //contentPanel.add(control_pane_, BorderLayout.NORTH);
 
         // 4) By calling getUIComponen() on the CefBrowser instance, we receive
         //    an displayable UI component which we can add to our application.
         contentPanel.add(getBrowser().getUIComponent(), BorderLayout.CENTER);
+        
+        if(OperatingSystem.resolveSystem().isMac()) {
+           statusPanel = new StatusPanel();
+           contentPanel.add(statusPanel, BorderLayout.SOUTH);
+        }
         return contentPanel;
     }
 
