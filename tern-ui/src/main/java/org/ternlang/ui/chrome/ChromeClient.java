@@ -20,7 +20,7 @@ public class ChromeClient implements Client {
 		super();
 	}
 
-	public ClientControl show(ClientContext context) {
+	public ClientControl create(ClientContext context) {
 		String folder = context.getFolder();
 		String address = context.getAddress();
 		File logFile = context.getLogFile();
@@ -41,10 +41,10 @@ public class ChromeClient implements Client {
 				false,
 				arguments);
 
-		return show(context, frame);
+		return create(context, frame);
 	}
 
-	private ClientControl show(ClientContext context, ChromeFrame frame) {
+	private ClientControl create(ClientContext context, ChromeFrame frame) {
 		int width = context.getWidth();
 		int height = context.getHeight();
 		String path = context.getIcon();
@@ -53,7 +53,6 @@ public class ChromeClient implements Client {
 
 		frame.setTitle(title);
 		frame.setSize(width, height);
-		frame.setVisible(true);
 
 		if (icon != null) {
 			URL resource = icon.getResource();
@@ -78,6 +77,19 @@ public class ChromeClient implements Client {
 			@Override
 			public void showDebugger() {
 				SwingUtilities.invokeLater(() -> frame.showDevTools());
+			}
+
+			@Override
+			public void show() {
+				frame.setVisible(true);
+			}
+
+			@Override
+			public void dispose() {
+				SwingUtilities.invokeLater(() -> {
+					frame.setVisible(false);
+					frame.dispose();
+				});
 			}
 		};
 	}

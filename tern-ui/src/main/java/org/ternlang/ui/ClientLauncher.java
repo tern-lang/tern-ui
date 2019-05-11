@@ -2,6 +2,8 @@ package org.ternlang.ui;
 
 import java.io.File;
 
+import org.ternlang.ui.chrome.load.LibraryLoader;
+
 public class ClientLauncher {
 
 	public static void main(String[] list) throws Exception {
@@ -13,10 +15,11 @@ public class ClientLauncher {
          .setDebug(true)
          .setTitle("Browser")
          .setAddress(list[0])
-		 .setLogFile(log)
-		 .setCachePath(cache)
+		   .setLogFile(log)
+		   .setCachePath(cache)
          .setArguments(list);
 
-		ClientProvider.provide().show(context);
+		LibraryLoader.loadAndUpdateLibraryPathFrom(".cef");
+		ClientProvider.provide().create(context).show();
 	}
 }

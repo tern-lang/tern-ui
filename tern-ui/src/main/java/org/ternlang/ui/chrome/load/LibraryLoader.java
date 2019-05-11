@@ -22,20 +22,26 @@ public class LibraryLoader {
       try {
          String[] locations = LibraryExtractor.extractTo(directory);
          String[] path = expandPath(locations);
-         
-         try {
-//            Field field = findField(ClassLoader.class, "usr_paths");
-//
-//            System.err.println(Arrays.asList(path));
-//            field.setAccessible(true);
-//            field.set(null, path);
-         } catch(Throwable e) {
-           System.err.println("Could not update USR paths");
-         }
+
          return path;
       } catch (Exception e) {
          throw new IllegalStateException("Could not load library from " + directory, e);
       }
+   }
+
+   public static String[] loadAndUpdateLibraryPathFrom(String folder) {
+      String[] path = loadFrom(folder);
+
+      try {
+          Field field = findField(ClassLoader.class, "usr_paths");
+
+          System.err.println(Arrays.asList(path));
+          field.setAccessible(true);
+          field.set(null, path);
+      } catch(Throwable e) {
+         System.err.println("Could not update USR paths");
+      }
+      return path;
    }
    
    private static Field findField(Class type, String name) {
