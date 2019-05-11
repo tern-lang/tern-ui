@@ -18,7 +18,7 @@ public class LibraryLoader {
       return loadFromPath(directory);
    }
 
-   public static String[] loadFromPath(File directory) {
+   private static String[] loadFromPath(File directory) {
       try {
          String[] locations = LibraryExtractor.extractTo(directory);
          String[] path = expandPath(locations);
@@ -60,6 +60,7 @@ public class LibraryLoader {
          throw new IllegalStateException("Could not find library path field", e);
       }
    }
+
    public static boolean isLibraryDeployed(String folder) {
       OperatingSystem os = OperatingSystem.resolveSystem();
       File path = libraryPath(folder);

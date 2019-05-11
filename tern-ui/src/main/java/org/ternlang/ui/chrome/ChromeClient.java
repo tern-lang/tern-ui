@@ -1,57 +1,59 @@
 package org.ternlang.ui.chrome;
 
-import org.ternlang.ui.*;
-import org.ternlang.ui.chrome.load.LibraryLoader;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.ternlang.ui.Client;
+import org.ternlang.ui.ClientCloseListener;
+import org.ternlang.ui.ClientContext;
+import org.ternlang.ui.ClientControl;
+import org.ternlang.ui.WindowIcon;
+import org.ternlang.ui.WindowIconLoader;
+import org.ternlang.ui.chrome.load.LibraryLoader;
 
 public class ChromeClient implements Client {
 
-	private final ScheduledThreadPoolExecutor executor;
-
 	public ChromeClient() {
-		this.executor = new ScheduledThreadPoolExecutor(2);
+		super();
 	}
 
 	public ClientControl show(ClientContext context) {
-		int width = context.getWidth();
-		int height = context.getHeight();
 		String folder = context.getFolder();
-		String address = context.getTarget();
-		String title = context.getTitle();
-		String path = context.getIcon();
+		String address = context.getAddress();
 		File logFile = context.getLogFile();
 		File cachePath = context.getCachePath();
 		URI target = URI.create(address);
 
-		try {
-			LibraryLoader.loadFrom(folder);
-		} catch (Throwable e) {
-			System.err.println("Error loading library from " + folder);
-			e.printStackTrace();
+		if(!LibraryLoader.isLibraryDeployed(folder)) {
+			throw new IllegalStateException("Client library not deployed to " + folder);
 		}
-		WindowIcon icon = WindowIconLoader.loadIcon(path);
 		String[] arguments = context.getArguments();
 		ChromeFrame frame = ChromeFrame.createChromeFrame(
 				target,
 				logFile,
 				cachePath,
-				folder,
 				null,
 				false,
 				false,
 				false,
 				arguments);
 
+		return show(context, frame);
+	}
+
+	private ClientControl show(ClientContext context, ChromeFrame frame) {
+		int width = context.getWidth();
+		int height = context.getHeight();
+		String path = context.getIcon();
+		String title = context.getTitle();
+		WindowIcon icon = WindowIconLoader.loadIcon(path);
+
 		frame.setTitle(title);
 		frame.setSize(width, height);
 		frame.setVisible(true);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		if (icon != null) {
 			URL resource = icon.getResource();
@@ -67,6 +69,12 @@ public class ChromeClient implements Client {
 			public void registerListener(ClientCloseListener listener) {
 				frame.addCloseListener(listener);
 			}
+
+			@Override
+			public void closeOnExit(boolean close) {
+				frame.setDefaultCloseOperation(close ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
+			}
+
 			@Override
 			public void showDebugger() {
 				SwingUtilities.invokeLater(() -> frame.showDevTools());

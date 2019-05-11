@@ -3,9 +3,9 @@ package org.ternlang.ui.chrome;
 import org.ternlang.ui.chrome.load.DeploymentManager;
 import org.ternlang.ui.chrome.load.DeploymentTask;
 
-import static org.ternlang.ui.chrome.ChromeBrowser.LIBRARY_PATH;
-
 public class ChromeLauncher {
+
+    public static final String LIBRARY_PATH = ".cef";
 
     public static void main(String[] args) throws Exception {
         String mainClass = ChromeBrowser.class.getName();

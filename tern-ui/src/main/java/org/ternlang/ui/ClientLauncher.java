@@ -1,7 +1,6 @@
 package org.ternlang.ui;
 
 import java.io.File;
-import java.net.URI;
 
 public class ClientLauncher {
 
@@ -13,8 +12,7 @@ public class ClientLauncher {
       ClientContext context = new ClientContext()
          .setDebug(true)
          .setTitle("Browser")
-         .setHost(URI.create(list[0]).getHost())
-         .setPort(URI.create(list[0]).getPort())
+         .setAddress(list[0])
 		 .setLogFile(log)
 		 .setCachePath(cache)
          .setArguments(list);

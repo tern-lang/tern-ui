@@ -1,14 +1,12 @@
 package org.ternlang.ui.chrome;
 
-import org.ternlang.ui.chrome.ui.BrowserFrame;
-
 import javax.swing.*;
 import java.io.File;
 import java.net.URI;
 
-public class ChromeBrowser {
+import org.ternlang.ui.chrome.ui.BrowserFrame;
 
-    public static final String LIBRARY_PATH = ".cef";
+public class ChromeBrowser {
 
     public static void main(String[] args) throws Exception {
         // OSR mode is enabled by default on Linux.
@@ -46,7 +44,6 @@ public class ChromeBrowser {
                 target,
                 null,
                 null,
-                LIBRARY_PATH,
                 cookiePath,
                 osrEnabledArg,
                 transparentPaintingEnabledArg,

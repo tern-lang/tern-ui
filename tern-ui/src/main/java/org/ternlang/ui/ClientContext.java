@@ -13,11 +13,10 @@ public class ClientContext {
 	private File logFile;
 	private String folder; // home folder
 	private String title;
-	private String host;
+	private String address;
 	private String icon;
 	private int width;
 	private int height;
-	private int port;
 	private boolean debug;
 	private String[] arguments;
 
@@ -53,12 +52,12 @@ public class ClientContext {
 		return this;
 	}
 
-	public String getHost() {
-		return host;
+	public String getAddress() {
+		return address;
 	}
 
-	public ClientContext setHost(String host) {
-		this.host = host;
+	public ClientContext setAddress(String address) {
+		this.address = address;
 		return this;
 	}
 
@@ -74,15 +73,6 @@ public class ClientContext {
 
 	public ClientContext setIcon(String icon) {
 		this.icon = icon;
-		return this;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public ClientContext setPort(int port) {
-		this.port = port;
 		return this;
 	}
 
@@ -121,13 +111,6 @@ public class ClientContext {
 		}
 		return height;
 	}
-
-	public String getTarget() {
-		if(port != -1 && port != 80 && port != 0) {
-			return String.format("http://%s:%s", host, port);
-		}
-		return String.format("http://%s", host);
-	}
 	
 	public String[] getArguments(){
 		return arguments != null ? arguments : new String[]{};
@@ -142,7 +125,7 @@ public class ClientContext {
 	}
 
 	public void validate() {
-		String address = getTarget();
+		String address = getAddress();
 		String title = getTitle();
 		File logFile = getLogFile();
 		File cachePath = getCachePath();

@@ -39,19 +39,11 @@ import org.ternlang.ui.chrome.ui.StatusPanel;
 public class ChromeFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
 
-    public static void initializeChrome(){
-        // Perform startup initialization on platforms that require it.
-        if (!CefApp.startup()) {
-            throw new IllegalStateException("Could not start chrome");
-        }
-    }
-
     // Linux has some weird static initialisation
     public static ChromeFrame createChromeFrame(
             URI target,
             File logFile,
             File cacheFile,
-            String libraryFolder,
             String cookiePath,
             boolean osrEnabledArg,
             boolean transparentPaintingEnabledArg,
