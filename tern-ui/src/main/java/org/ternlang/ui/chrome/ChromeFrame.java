@@ -4,11 +4,10 @@
 
 package org.ternlang.ui.chrome;
 
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.net.URI;
-
-import javax.swing.JPanel;
 
 import org.cef.CefApp;
 import org.cef.CefApp.CefVersion;

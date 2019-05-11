@@ -48,6 +48,8 @@ public class ChromeClient implements Client {
 		int width = context.getWidth();
 		int height = context.getHeight();
 		String path = context.getIcon();
+		String address = context.getAddress();
+		String host = URI.create(address).getHost();
 		String title = context.getTitle();
 		WindowIcon icon = WindowIconLoader.loadIcon(path);
 
@@ -71,31 +73,36 @@ public class ChromeClient implements Client {
 			}
 
 			@Override
-			public void registerListener(ClientCloseListener listener) {
+			public ClientControl registerListener(ClientCloseListener listener) {
 				frame.addCloseListener(listener);
+				return this;
 			}
 
 			@Override
-			public void closeOnExit(boolean close) {
+			public ClientControl closeOnExit(boolean close) {
 				frame.setDefaultCloseOperation(close ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
+				return this;
 			}
 
 			@Override
-			public void showDebugger() {
+			public ClientControl showDebugger() {
 				SwingUtilities.invokeLater(() -> frame.showDevTools());
+				return this;
 			}
 
 			@Override
-			public void show() {
+			public ClientControl show() {
 				frame.setVisible(true);
+				return this;
 			}
 
 			@Override
-			public void dispose() {
+			public ClientControl dispose() {
 				SwingUtilities.invokeLater(() -> {
 					frame.setVisible(false);
 					frame.dispose();
 				});
+				return this;
 			}
 		};
 	}

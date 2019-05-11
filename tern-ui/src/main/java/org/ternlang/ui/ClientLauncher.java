@@ -14,12 +14,15 @@ public class ClientLauncher {
       ClientContext context = new ClientContext()
          .setDebug(true)
          .setTitle("Browser")
-         .setAddress(list[0])
+         .setAddress("http://www.authrus.com:8180/")
 		   .setLogFile(log)
 		   .setCachePath(cache)
          .setArguments(list);
 
 		LibraryLoader.loadAndUpdateLibraryPathFrom(".cef");
-		ClientProvider.provide().create(context).show();
+		ClientControl control = ClientProvider.provide().create(context);
+
+		//control.setCookie("SESSID", "foo");
+		control.show();
 	}
 }
