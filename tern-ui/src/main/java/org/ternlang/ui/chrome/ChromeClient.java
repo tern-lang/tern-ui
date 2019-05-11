@@ -64,6 +64,12 @@ public class ChromeClient implements Client {
 			SwingUtilities.invokeLater(() -> frame.showDevTools());
 		}
 		return new ClientControl() {
+
+			@Override
+			public ClientContext getContext() {
+				return context;
+			}
+
 			@Override
 			public void registerListener(ClientCloseListener listener) {
 				frame.addCloseListener(listener);
