@@ -1,19 +1,29 @@
 package org.ternlang.ui.chrome.load;
 
-import org.ternlang.ui.OperatingSystem;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.ternlang.ui.OperatingSystem;
 
 public class LibraryExtractor {
 
    public static final String CEF_VERSION = "3.3538.1852.gcb937fc";
    public static final String CEF_PATH = "cef/" + CEF_VERSION;
    public static final String CEF_ARCHIVE = "cef.tar";
+   public static final String CEF_ICON_PNG = "CefDockIcon.png";
+   public static final String CEF_ICON_ICNS = "CefIcon.icns";
+   public static final String TERN_ICON_PNG = "icon/icon-large.png";
+   public static final String TERN_ICON_ICNS = TERN_ICON_PNG + ".icns";
+   public static final String MAC_JAR_PATH = "Contents/Java";
+   public static final String MAC_RESOURCE_PATH = "Contents/Resources";
    public static final List<String> LINUX_AWT_LIBS = Collections.unmodifiableList(
          Arrays.asList(
                "libawt.so", 
@@ -84,41 +94,40 @@ public class LibraryExtractor {
       }
       if(os.isMac()) {
          installMacClassPath(location);
+         installMacIcons(location);
       }
    }
 
    public static boolean isMacLibraryInstalled(File location) {
       File root = new File(location, CEF_PATH);
-      File[] installedFiles = root.listFiles();
+      File installFolder = resolveMacInstallPath(root, MAC_JAR_PATH);
 
-      if(installedFiles != null) {
-         File installFolder = Arrays.asList(installedFiles)
+      if (installFolder != null) {
+         File[] jarFiles = installFolder.listFiles();
+         return Arrays.asList(jarFiles)
                .stream()
-               .filter(file -> file.getName().endsWith(".app") && file.isDirectory())
-               .map(file -> new File(file, "Contents/Java/"))
-               .filter(file -> file.exists() && file.isDirectory())
-               .findFirst()
-               .get();
-
-         if (installFolder != null) {
-            File[] jarFiles = installFolder.listFiles();
-            return Arrays.asList(jarFiles)
-                  .stream()
-                  .anyMatch(entry -> entry.getName().endsWith(".jar"));
-         }
+               .anyMatch(entry -> entry.getName().endsWith(".jar"));
       }
       return false;
    }
+   
+   private static File resolveMacInstallPath(File location, String path) {
+      File[] installedFiles = location.listFiles();
+      
+      if(installedFiles != null) {
+         return Arrays.asList(installedFiles)
+               .stream()
+               .filter(file -> file.getName().endsWith(".app") && file.isDirectory())
+               .map(file -> new File(file, path))
+               .filter(file -> file.exists() && file.isDirectory())
+               .findFirst()
+               .get();
+      }
+      return null;
+   }
 
    private static void installMacClassPath(File location) {
-      File[] installedFiles = location.listFiles();
-      File installFolder = Arrays.asList(installedFiles)
-            .stream()
-            .filter(file -> file.getName().endsWith(".app") && file.isDirectory())
-            .map(file -> new File(file, "Contents/Java"))
-            .filter(file -> file.exists() && file.isDirectory())
-            .findFirst()
-            .get();
+      File installFolder = resolveMacInstallPath(location, MAC_JAR_PATH);
 
       if(installFolder != null) {
          try {
@@ -149,11 +158,29 @@ public class LibraryExtractor {
          }
       }
    }
+   
+   private static void installMacIcons(File location) {
+      File installFolder = resolveMacInstallPath(location, MAC_RESOURCE_PATH);
 
-   private static void copyFile(File source, File destination) {
+      if(installFolder != null) {
+         try {
+            URL pngIcon = locateResource(TERN_ICON_PNG);
+            URL icnsIcon = locateResource(TERN_ICON_ICNS);
+            
+            System.err.println("Installing icon files to " + installFolder);
+            
+            copyFile(pngIcon, new File(installFolder, CEF_ICON_PNG));
+            copyFile(icnsIcon, new File(installFolder, CEF_ICON_ICNS));
+         } catch(Exception e) {
+            e.printStackTrace();
+         }
+      }
+   }
+
+   private static void copyFile(URL source, File destination) {
       try {
-         try(FileInputStream inputStream = new FileInputStream(source)) {
-            try (FileOutputStream outputStream = new FileOutputStream(destination)) {
+         try(InputStream inputStream = source.openStream()) {
+            try (OutputStream outputStream = new FileOutputStream(destination)) {
                byte[] chunk = new byte[8192];
                int count = 0;
 
@@ -162,6 +189,15 @@ public class LibraryExtractor {
                }
             }
          }
+      } catch(Exception e) {
+         e.printStackTrace();
+      }
+   }
+   
+   private static void copyFile(File source, File destination) {
+      try {
+         URL resource = source.toURI().toURL();
+         copyFile(resource, destination);
       } catch(Exception e) {
          e.printStackTrace();
       }
