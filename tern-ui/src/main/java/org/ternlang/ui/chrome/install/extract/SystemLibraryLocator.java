@@ -1,4 +1,4 @@
-package org.ternlang.ui.chrome.load;
+package org.ternlang.ui.chrome.install.extract;
 
 import java.io.File;
 import java.util.Collections;

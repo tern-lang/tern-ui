@@ -4,6 +4,11 @@
 
 package org.ternlang.ui.chrome.demo;
 
+import java.awt.BorderLayout;
+import java.io.File;
+
+import javax.swing.JPanel;
+
 import org.cef.CefApp;
 import org.cef.CefApp.CefVersion;
 import org.cef.CefClient;
@@ -16,23 +21,26 @@ import org.cef.handler.CefDisplayHandlerAdapter;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.cef.handler.CefRequestContextHandlerAdapter;
 import org.cef.network.CefCookieManager;
+import org.ternlang.ui.OperatingSystem;
 import org.ternlang.ui.chrome.dialog.DownloadDialog;
-import org.ternlang.ui.chrome.handler.*;
-import org.ternlang.ui.chrome.load.LibraryLoader;
+import org.ternlang.ui.chrome.handler.AppHandler;
+import org.ternlang.ui.chrome.handler.ContextMenuHandler;
+import org.ternlang.ui.chrome.handler.DragHandler;
+import org.ternlang.ui.chrome.handler.JSDialogHandler;
+import org.ternlang.ui.chrome.handler.KeyboardHandler;
+import org.ternlang.ui.chrome.handler.MessageRouterHandler;
+import org.ternlang.ui.chrome.handler.MessageRouterHandlerEx;
+import org.ternlang.ui.chrome.handler.RequestHandler;
 import org.ternlang.ui.chrome.ui.BrowserFrame;
 import org.ternlang.ui.chrome.ui.ControlPanel;
 import org.ternlang.ui.chrome.ui.MenuBar;
 import org.ternlang.ui.chrome.ui.StatusPanel;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-
 public class MainFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
 
     public static void main(String[] args) throws Exception {
-        LibraryLoader.loadFrom(".cef");
+        OperatingSystem.resolveSystem().getInstaller(".cef");
 
         // Perform startup initialization on platforms that require it.
         if (!CefApp.startup()) {

@@ -21,13 +21,12 @@ import org.cef.CefApp;
 import org.cef.CefApp.CefAppState;
 import org.cef.CefClient;
 import org.cef.CefSettings;
-import org.cef.OS;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefAppHandlerAdapter;
 import org.cef.handler.CefDisplayHandlerAdapter;
 import org.cef.handler.CefFocusHandlerAdapter;
-import org.ternlang.ui.chrome.load.LibraryLoader;
+import org.ternlang.ui.OperatingSystem;
 
 /**
  * This is a simple example application using JCEF.
@@ -179,7 +178,7 @@ public class MainFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        LibraryLoader.loadFrom(".cef");
+       OperatingSystem.resolveSystem().getInstaller(".cef").install(true);
 
         // Perform startup initialization on platforms that require it.
         if (!CefApp.startup()) {

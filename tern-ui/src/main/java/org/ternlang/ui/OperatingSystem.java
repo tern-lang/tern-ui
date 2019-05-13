@@ -1,5 +1,10 @@
 package org.ternlang.ui;
 
+import org.ternlang.ui.chrome.install.Installer;
+import org.ternlang.ui.chrome.install.LinuxInstaller;
+import org.ternlang.ui.chrome.install.MacInstaller;
+import org.ternlang.ui.chrome.install.WindowsInstaller;
+
 public enum OperatingSystem {
    WINDOWS("win64"),
    MAC("mac"),
@@ -13,6 +18,19 @@ public enum OperatingSystem {
    
    public String getCode() {
       return code;
+   }
+   
+   public Installer getInstaller(String folder) {
+      if(isWindows()) {
+         return new WindowsInstaller(folder);
+      }
+      if(isLinux()) {
+         return new LinuxInstaller(folder);
+      }
+      if(isMac()) {
+         return new MacInstaller(folder);
+      }
+      throw new IllegalStateException("No installer for " + this);
    }
    
    public boolean isWindows() {

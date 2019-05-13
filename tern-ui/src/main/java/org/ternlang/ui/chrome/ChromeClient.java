@@ -1,18 +1,21 @@
 package org.ternlang.ui.chrome;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.ternlang.ui.Client;
 import org.ternlang.ui.ClientCloseListener;
 import org.ternlang.ui.ClientContext;
 import org.ternlang.ui.ClientControl;
+import org.ternlang.ui.OperatingSystem;
 import org.ternlang.ui.WindowIcon;
 import org.ternlang.ui.WindowIconLoader;
-import org.ternlang.ui.chrome.load.LibraryLoader;
 
 public class ChromeClient implements Client {
 
@@ -27,7 +30,7 @@ public class ChromeClient implements Client {
 		File cachePath = context.getCachePath();
 		URI target = URI.create(address);
 
-		if(!LibraryLoader.isLibraryDeployed(folder)) {
+		if(!OperatingSystem.resolveSystem().getInstaller(folder).isInstalled()) {
 			throw new IllegalStateException("Client library not deployed to " + folder);
 		}
 		String[] arguments = context.getArguments();
@@ -48,8 +51,6 @@ public class ChromeClient implements Client {
 		int width = context.getWidth();
 		int height = context.getHeight();
 		String path = context.getIcon();
-		String address = context.getAddress();
-		String host = URI.create(address).getHost();
 		String title = context.getTitle();
 		WindowIcon icon = WindowIconLoader.loadIcon(path);
 

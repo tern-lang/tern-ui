@@ -1,4 +1,4 @@
-package org.ternlang.ui.chrome.load;
+package org.ternlang.ui.chrome.install.deploy;
 
 import org.ternlang.ui.OperatingSystem;
 

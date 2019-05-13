@@ -5,9 +5,9 @@
 package org.ternlang.ui.jcef.detailed;
 
 import java.awt.BorderLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.KeyboardFocusManager;
 import java.io.File;
 
 import javax.swing.JPanel;
@@ -25,8 +25,7 @@ import org.cef.handler.CefFocusHandlerAdapter;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.cef.handler.CefRequestContextHandlerAdapter;
 import org.cef.network.CefCookieManager;
-
-import org.ternlang.ui.chrome.load.LibraryLoader;
+import org.ternlang.ui.OperatingSystem;
 import org.ternlang.ui.jcef.detailed.dialog.DownloadDialog;
 import org.ternlang.ui.jcef.detailed.handler.AppHandler;
 import org.ternlang.ui.jcef.detailed.handler.ContextMenuHandler;
@@ -43,7 +42,7 @@ import org.ternlang.ui.jcef.detailed.ui.StatusPanel;
 public class MainFrame extends BrowserFrame {
     private static final long serialVersionUID = -2295538706810864538L;
     public static void main(String[] args) {
-        LibraryLoader.loadFrom(".cef");
+       OperatingSystem.resolveSystem().getInstaller(".cef").install(true);
 
         // Perform startup initialization on platforms that require it.
         if (!CefApp.startup()) {

@@ -1,7 +1,7 @@
 package org.ternlang.ui.chrome;
 
-import org.ternlang.ui.chrome.load.DeploymentManager;
-import org.ternlang.ui.chrome.load.DeploymentTask;
+import org.ternlang.ui.chrome.install.deploy.DeploymentManager;
+import org.ternlang.ui.chrome.install.deploy.DeploymentTask;
 
 public class ChromeLauncher {
 

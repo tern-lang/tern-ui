@@ -2,8 +2,6 @@ package org.ternlang.ui;
 
 import java.io.File;
 
-import org.ternlang.ui.chrome.load.LibraryLoader;
-
 public class ClientLauncher {
 
 	public static void main(String[] list) throws Exception {
@@ -19,7 +17,7 @@ public class ClientLauncher {
 		   .setCachePath(cache)
          .setArguments(list);
 
-		LibraryLoader.loadAndUpdateLibraryPathFrom(".cef");
+		OperatingSystem.resolveSystem().getInstaller(".cef").install(true);
 		ClientControl control = ClientProvider.provide().create(context);
 
 		//control.setCookie("SESSID", "foo");
