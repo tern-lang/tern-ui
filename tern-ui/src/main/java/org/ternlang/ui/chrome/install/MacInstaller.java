@@ -57,9 +57,12 @@ public class MacInstaller extends UserHomeInstaller {
 
       if (installFolder != null) {
          File[] jarFiles = installFolder.listFiles();
-         return Arrays.asList(jarFiles)
+         
+         if(jarFiles != null) {
+            return Arrays.asList(jarFiles)
                .stream()
                .anyMatch(entry -> entry.getName().endsWith(".jar"));
+         }
       }
       return false;
    }
