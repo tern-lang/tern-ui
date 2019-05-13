@@ -9,6 +9,11 @@ import java.util.stream.Collectors;
 
 class JavaLauncher implements Launcher {
    
+   private static final String UNIX_LIBRARY_PATH = "LD_LIBRARY_PATH";
+   private static final String WINDOWS_LIBRARY_PATH = "Path";
+   private static final String IGNORE_UNKNOWN_OPTIONS = "-XX:+IgnoreUnrecognizedVMOptions";
+   private static final String INCLUDE_JAVA_MODULE = "--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED";
+   
    private final String[] libraryPaths;
    
    public JavaLauncher(String[] libraryPaths) {
@@ -27,9 +32,9 @@ class JavaLauncher implements Launcher {
          File directory = new File(".");
          List<String> command = new ArrayList<String>();
          
-         command.add(javaHome + "/bin/java");
-         command.add("-XX:+IgnoreUnrecognizedVMOptions");
-         command.add("--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED");
+         command.add(javaHome + File.separator + "bin" + File.separator + "java");
+         command.add(IGNORE_UNKNOWN_OPTIONS);
+         command.add(INCLUDE_JAVA_MODULE);
          command.add("-cp");
          command.add(classPath);
 
@@ -47,9 +52,11 @@ class JavaLauncher implements Launcher {
          }
          ProcessBuilder builder = new ProcessBuilder(command);
          
+         System.err.println("Launching: "+ command);
+         
          Map<String, String> environment = builder.environment();
-         environment.put("LD_LIBRARY_PATH", libraryPath);
-         environment.put("Path", libraryPath);
+         environment.put(UNIX_LIBRARY_PATH, libraryPath);
+         environment.put(WINDOWS_LIBRARY_PATH, libraryPath);
          builder.directory(directory)
             .redirectErrorStream(true)
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
