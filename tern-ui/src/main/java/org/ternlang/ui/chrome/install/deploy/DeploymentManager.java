@@ -2,6 +2,7 @@ package org.ternlang.ui.chrome.install.deploy;
 
 import org.ternlang.ui.OperatingSystem;
 import org.ternlang.ui.chrome.install.Installer;
+import org.ternlang.ui.chrome.install.Launcher;
 
 public class DeploymentManager {
 
@@ -9,7 +10,8 @@ public class DeploymentManager {
        OperatingSystem os = OperatingSystem.resolveSystem();
        Installer module = os.getInstaller(deployPath);
        boolean alreadyDeployed = module.isInstalled();
-       Runnable mainTask = () -> module.install().launch(mainClass, arguments, properties);
+       Launcher launcher = module.install();
+       Runnable mainTask = () -> launcher.launch(mainClass, arguments, properties);
 
        return new DeploymentTask(os, mainTask, alreadyDeployed);
    }
