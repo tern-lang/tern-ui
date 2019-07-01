@@ -52,9 +52,12 @@ class JavaLauncher implements Launcher {
          }
          ProcessBuilder builder = new ProcessBuilder(command);
          
-         System.err.println("Launching: "+ command);
+         System.err.printf("Launching: %s%n", command);
+         System.err.printf("%s=%s%n", UNIX_LIBRARY_PATH, libraryPath);
+         System.err.printf("%s=%s%n", WINDOWS_LIBRARY_PATH, libraryPath);
          
          Map<String, String> environment = builder.environment();
+         
          environment.put(UNIX_LIBRARY_PATH, libraryPath);
          environment.put(WINDOWS_LIBRARY_PATH, libraryPath);
          builder.directory(directory)

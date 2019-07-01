@@ -41,7 +41,8 @@ public class MacInstaller extends UserHomeInstaller {
          if(installApp != null) {
             try {
                String app = installApp.getCanonicalPath();
-               System.err.println("Launching " + app);
+               
+               System.err.printf("Launching: %s%n", app);
                Desktop.getDesktop().open(installApp); // should open mac application
             } catch(Exception e) {
                e.printStackTrace();
