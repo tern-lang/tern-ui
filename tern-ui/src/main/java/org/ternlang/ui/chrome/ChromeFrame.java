@@ -43,7 +43,7 @@ public class ChromeFrame extends BrowserFrame {
             URI target,
             File logFile,
             File cacheFile,
-            String cookiePath,
+            File cookiePath,
             boolean osrEnabledArg,
             boolean transparentPaintingEnabledArg,
             boolean createImmediately,
@@ -70,7 +70,7 @@ public class ChromeFrame extends BrowserFrame {
 
     private ChromeFrame(ChromeFrameListener listener, URI address, File log, File cache,
                        boolean osrEnabled, boolean transparentPaintingEnabled, boolean createImmediately,
-                       String cookiePath, String[] args) {
+                       File cookiePath, String[] args) {
         CefApp myApp;
         if (CefApp.getState() != CefApp.CefAppState.INITIALIZED) {
             // 1) CefApp is the entry point for JCEF. You can pass
@@ -197,7 +197,10 @@ public class ChromeFrame extends BrowserFrame {
         //    we provide our own cookie manager which persists cookies in a directory.
         CefRequestContext requestContext = null;
         if (cookiePath != null) {
-            cookieManager_ = CefCookieManager.createManager(cookiePath, false);
+            if(!cookiePath.exists()) {
+               cookiePath.mkdirs();
+            }
+            cookieManager_ = CefCookieManager.createManager(cookiePath.getAbsolutePath(), false);
             requestContext = CefRequestContext.createContext(new CefRequestContextHandlerAdapter() {
                 @Override
                 public CefCookieManager getCookieManager() {

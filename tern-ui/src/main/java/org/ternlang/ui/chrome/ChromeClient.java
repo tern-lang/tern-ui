@@ -28,8 +28,11 @@ public class ChromeClient implements Client {
 		String address = context.getAddress();
 		File logFile = context.getLogFile();
 		File cachePath = context.getCachePath();
+	   File cookiePath = context.getCookiePath();
 		URI target = URI.create(address);
 
+		cookiePath.deleteOnExit();
+		
 		if(!OperatingSystem.resolveSystem().getInstaller(folder).isInstalled()) {
 			throw new IllegalStateException("Client library not deployed to " + folder);
 		}
@@ -38,7 +41,7 @@ public class ChromeClient implements Client {
 				target,
 				logFile,
 				cachePath,
-				null,
+				cookiePath,
 				false,
 				false,
 				false,

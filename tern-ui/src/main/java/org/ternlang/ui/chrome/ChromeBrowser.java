@@ -44,7 +44,7 @@ public class ChromeBrowser {
                 target,
                 null,
                 null,
-                cookiePath,
+                new File(cookiePath),
                 osrEnabledArg,
                 transparentPaintingEnabledArg,
                 createImmediately,

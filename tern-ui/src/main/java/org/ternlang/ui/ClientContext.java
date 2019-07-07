@@ -1,6 +1,6 @@
 package org.ternlang.ui;
 
-import java.awt.*;
+import java.awt.Toolkit;
 import java.io.File;
 import java.net.URI;
 
@@ -11,6 +11,7 @@ public class ClientContext {
 
 	private File cachePath;
 	private File logFile;
+	private File cookiePath;
 	private String folder; // home folder
 	private String title;
 	private String address;
@@ -37,6 +38,16 @@ public class ClientContext {
 		this.logFile = logFile;
 		return this;
 	}
+	
+   public File getCookiePath() {
+      return cookiePath;
+   }
+
+   public ClientContext setCookiePath(File cookiePath) {
+      this.cookiePath = cookiePath;
+      return this;
+   }
+
 
 	public ClientContext setFolder(String folder) {
 		this.folder = folder;
