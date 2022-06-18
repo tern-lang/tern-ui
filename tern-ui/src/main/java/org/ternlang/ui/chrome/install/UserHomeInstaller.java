@@ -1,5 +1,8 @@
 package org.ternlang.ui.chrome.install;
 
+import org.ternlang.ui.OperatingSystem;
+import org.ternlang.ui.chrome.install.extract.LibraryExtractor;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -10,8 +13,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import org.ternlang.ui.chrome.install.extract.LibraryExtractor;
 
 abstract class UserHomeInstaller implements Installer {
    
@@ -51,8 +52,8 @@ abstract class UserHomeInstaller implements Installer {
       boolean exists = new File(folder).exists();
 
       if(slash == -1 && !exists) {
-         String home = System.getProperty("user.home");
-         return new File(home, folder);
+         File installDir = OperatingSystem.resolveSystem().getInstallDirectory();
+         return new File(installDir, folder);
       }
       return new File(folder);
    }

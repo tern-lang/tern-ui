@@ -19,95 +19,95 @@ import org.ternlang.ui.WindowIconLoader;
 
 public class ChromeClient implements Client {
 
-	public ChromeClient() {
-		super();
-	}
+   public ChromeClient() {
+      super();
+   }
 
-	public ClientControl create(ClientContext context) {
-		String folder = context.getFolder();
-		String address = context.getAddress();
-		File logFile = context.getLogFile();
-		File cachePath = context.getCachePath();
-	   File cookiePath = context.getCookiePath();
-		URI target = URI.create(address);
+   public ClientControl create(ClientContext context) {
+      String folder = context.getFolder();
+      String address = context.getAddress();
+      File logFile = context.getLogFile();
+      File cachePath = context.getCachePath();
+      File cookiePath = context.getCookiePath();
+      URI target = URI.create(address);
 
-		cookiePath.deleteOnExit();
-		
-		if(!OperatingSystem.resolveSystem().getInstaller(folder).isInstalled()) {
-			throw new IllegalStateException("Client library not deployed to " + folder);
-		}
-		String[] arguments = context.getArguments();
-		ChromeFrame frame = ChromeFrame.createChromeFrame(
-				target,
-				logFile,
-				cachePath,
-				cookiePath,
-				false,
-				false,
-				false,
-				arguments);
+      cookiePath.deleteOnExit();
 
-		return create(context, frame);
-	}
+      if (!OperatingSystem.resolveSystem().getInstaller(folder).isInstalled()) {
+         throw new IllegalStateException("Client library not deployed to " + folder);
+      }
+      String[] arguments = context.getArguments();
+      ChromeFrame frame = ChromeFrame.createChromeFrame(
+           target,
+           logFile,
+           cachePath,
+           cookiePath,
+           false,
+           false,
+           false,
+           arguments);
 
-	private ClientControl create(ClientContext context, ChromeFrame frame) {
-		int width = context.getWidth();
-		int height = context.getHeight();
-		String path = context.getIcon();
-		String title = context.getTitle();
-		WindowIcon icon = WindowIconLoader.loadIcon(path);
+      return create(context, frame);
+   }
 
-		frame.setTitle(title);
-		frame.setSize(width, height);
+   private ClientControl create(ClientContext context, ChromeFrame frame) {
+      int width = context.getWidth();
+      int height = context.getHeight();
+      String path = context.getIcon();
+      String title = context.getTitle();
+      WindowIcon icon = WindowIconLoader.loadIcon(path);
 
-		if (icon != null) {
-			URL resource = icon.getResource();
-			Image image = Toolkit.getDefaultToolkit().getImage(resource);
+      frame.setTitle(title);
+      frame.setSize(width, height);
 
-			frame.setIconImage(image);
-		}
-		if(context.isDebug()) {
-			SwingUtilities.invokeLater(() -> frame.showDevTools());
-		}
-		return new ClientControl() {
+      if (icon != null) {
+         URL resource = icon.getResource();
+         Image image = Toolkit.getDefaultToolkit().getImage(resource);
 
-			@Override
-			public ClientContext getContext() {
-				return context;
-			}
+         frame.setIconImage(image);
+      }
+      if (context.isDebug()) {
+         SwingUtilities.invokeLater(() -> frame.showDevTools());
+      }
+      return new ClientControl() {
 
-			@Override
-			public ClientControl registerListener(ClientCloseListener listener) {
-				frame.addCloseListener(listener);
-				return this;
-			}
+         @Override
+         public ClientContext getContext() {
+            return context;
+         }
 
-			@Override
-			public ClientControl closeOnExit(boolean close) {
-				frame.setDefaultCloseOperation(close ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
-				return this;
-			}
+         @Override
+         public ClientControl registerListener(ClientCloseListener listener) {
+            frame.addCloseListener(listener);
+            return this;
+         }
 
-			@Override
-			public ClientControl showDebugger() {
-				SwingUtilities.invokeLater(() -> frame.showDevTools());
-				return this;
-			}
+         @Override
+         public ClientControl closeOnExit(boolean close) {
+            frame.setDefaultCloseOperation(close ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
+            return this;
+         }
 
-			@Override
-			public ClientControl show() {
-				frame.setVisible(true);
-				return this;
-			}
+         @Override
+         public ClientControl showDebugger() {
+            SwingUtilities.invokeLater(() -> frame.showDevTools());
+            return this;
+         }
 
-			@Override
-			public ClientControl dispose() {
-				SwingUtilities.invokeLater(() -> {
-					frame.setVisible(false);
-					frame.dispose();
-				});
-				return this;
-			}
-		};
-	}
+         @Override
+         public ClientControl show() {
+            frame.setVisible(true);
+            return this;
+         }
+
+         @Override
+         public ClientControl dispose() {
+            SwingUtilities.invokeLater(() -> {
+               frame.setVisible(false);
+               frame.dispose();
+            });
+            return this;
+         }
+      };
+   }
 }
